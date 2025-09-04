@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Farm Ledger — Consolidated Settlement</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    .mono { font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace; }
+    /* Custom focus ring color */
+    input:focus, select:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #4f46e5; /* Indigo-500 */
+      border-color: #6366f1; /* Indigo-500 */
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-green-800">Farm Ledger</h1>
+        <p class="text-lg text-gray-600">Consolidated Settlement Calculator</p>
+    </div>
+
+    <form id="ledgerForm" class="space-y-6">
+        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+            <label for="sharecropperName" class="block text-sm font-medium text-gray-700">Sharecropper Name (optional)</label>
+            <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" placeholder="e.g. Ali Khan">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                <label for="salesAmount" class="flex items-center text-base font-semibold text-gray-900">
+                    <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-2m0 0c-1.657 0-3-.895-3-2s1.343-2 3-2 3-.895 3-2-1.343-2-3-2m0 0V5"></path></svg>
+                    Total Sales (PKR)
+                </label>
+                <input id="salesAmount" type="number" min="0" step="0.01" class="mt-2 w-full p-2 border border-gray-300 rounded-md" value="0">
+            </div>
+
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                <label for="cashAdvance" class="flex items-center text-base font-semibold text-gray-900">
+                     <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    Cash Advance to Sharecropper
+                </label>
+                <input id="cashAdvance" type="number" min="0" step="0.01" class="mt-2 w-full p-2 border border-gray-300 rounded-md" value="0">
+                <p class="text-xs text-gray-500 mt-2">Cash given by owner to sharecropper during the season.</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+          <h2 class="text-base font-semibold text-gray-900 mb-4">Expenses Breakdown</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-5">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Fertilizer (PKR)</label>
+              <input id="fertilizerAmount" type="number" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" value="0">
+              <select id="fertilizerPaid" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                <option>Owner</option> <option>Sharecropper</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Pesticides (PKR)</label>
+              <input id="pesticideAmount" type="number" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" value="0">
+              <select id="pesticidePaid" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                <option>Owner</option> <option>Sharecropper</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Seeds (PKR)</label>
+              <input id="seedAmount" type="number" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" value="0">
+              <select id="seedPaid" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                <option>Owner</option> <option>Sharecropper</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Labour (PKR)</label>
+              <input id="labourAmount" type="number" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" value="0">
+              <select id="labourPaid" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                <option>Sharecropper</option> <option>Owner</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Ploughing (PKR)</label>
+              <input id="ploughingAmount" type="number" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" value="0">
+              <select id="ploughingPaid" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                <option>Sharecropper</option> <option>Owner</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Other Expenses (PKR)</label>
+              <input id="otherAmount" type="number" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" value="0">
+              <select id="otherPaid" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                <option>Owner</option> <option>Sharecropper</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button type="button" id="calculateLedger" class="flex-1 bg-indigo-600 text-white font-semibold p-3 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+            Calculate Settlement
+          </button>
+          <button type="button" id="resetForm" class="flex-1 bg-gray-200 text-gray-700 font-semibold p-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition duration-150 ease-in-out">
+            Reset
+          </button>
+        </div>
+      </form>
+
+    <div id="ledgerResult" class="mt-10 hidden">
+        </div>
+
+  </div>
+
+  <script>
+    // Helper to get a number from an input field, defaulting to 0
+    const toNum = (id) => parseFloat(document.getElementById(id).value) || 0;
+    // Helper to get the selected value from a dropdown
+    const who = (id) => document.getElementById(id).value;
+    // Helper to format numbers as PKR currency
+    const money = (val) => `PKR ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    const calculateButton = document.getElementById('calculateLedger');
+    const resetButton = document.getElementById('resetForm');
+    const resultsDiv = document.getElementById('ledgerResult');
+
+    resetButton.addEventListener('click', () => {
+      document.getElementById('ledgerForm').reset();
+      document.getElementById('sharecropperName').value = '';
+      resultsDiv.innerHTML = '';
+      resultsDiv.classList.add('hidden');
+    });
+
+    calculateButton.addEventListener('click', () => {
+      const name = document.getElementById('sharecropperName').value.trim() || 'Sharecropper';
+
+      // --- 1. GATHER INPUTS ---
+      const sales = toNum('salesAmount');
+      const advance = toNum('cashAdvance');
+      const expenses = [
+        { name: 'Fertilizer', amount: toNum('fertilizerAmount'), paidBy: who('fertilizerPaid'), type: 'input' },
+        { name: 'Pesticides', amount: toNum('pesticideAmount'),  paidBy: who('pesticidePaid'),  type: 'input' },
+        { name: 'Seeds',      amount: toNum('seedAmount'),       paidBy: who('seedPaid'),       type: 'input' },
+        { name: 'Labour',     amount: toNum('labourAmount'),      paidBy: who('labourPaid'),      type: 'operational' },
+        { name: 'Ploughing',  amount: toNum('ploughingAmount'),   paidBy: who('ploughingPaid'),   type: 'operational' },
+        { name: 'Other',      amount: toNum('otherAmount'),       paidBy: who('otherPaid'),       type: 'other' }
+      ];
+
+      // --- 2. CALCULATE TOTALS ---
+      const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+      const inputsTotal = expenses.filter(e => e.type === 'input').reduce((sum, exp) => sum + exp.amount, 0);
+      const operationalTotal = expenses.filter(e => e.type === 'operational').reduce((sum, exp) => sum + exp.amount, 0);
+      const otherTotal = expenses.filter(e => e.type === 'other').reduce((sum, exp) => sum + exp.amount, 0);
+      const profit = sales - totalExpenses;
+      const profitEach = profit / 2;
+
+      // --- 3. DETERMINE OBLIGATIONS (Standard Sharecropping Rules) ---
+      // Inputs (Fertilizer, Pesticides, Seeds) are split 50/50.
+      // Operational (Labour, Ploughing) are 100% sharecropper's responsibility.
+      // Other expenses are 100% owner's responsibility.
+      const ownerObligation = (inputsTotal * 0.5) + otherTotal;
+      const shareObligation = (inputsTotal * 0.5) + operationalTotal;
+
+      // --- 4. CALCULATE ACTUAL PAYMENTS ---
+      const ownerPaid = expenses.filter(e => e.paidBy === 'Owner').reduce((sum, exp) => sum + exp.amount, 0);
+      const sharePaid = expenses.filter(e => e.paidBy === 'Sharecropper').reduce((sum, exp) => sum + exp.amount, 0);
+
+      // --- 5. RECONCILE PAYMENTS VS OBLIGATIONS ---
+      // This calculates if a party overpaid or underpaid their share of costs.
+      // Positive value = overpaid (is owed a reimbursement from the venture).
+      // Negative value = underpaid (owes money to the venture).
+      const ownerOverUnder = ownerPaid - ownerObligation;
+      const shareOverUnder = sharePaid - shareObligation;
+
+      // --- 6. CALCULATE FINAL SETTLEMENT ---
+      // The final net amount each party should receive from the total sales proceeds.
+      // Formula: (50% of Profit) + (Reimbursement for Overpayment / Debt for Underpayment) +/- (Cash Advance Reconciliation)
+      
+      // The Owner gets the advance back (+), the Sharecropper pays it back (-).
+      const netToOwner = profitEach + ownerOverUnder + advance;
+      const netToShare = profitEach + shareOverUnder - advance;
+
+      // --- 7. GENERATE DYNAMIC HTML FOR RESULTS ---
+      renderResults({
+          name, sales, totalExpenses, profit, profitEach,
+          ownerObligation, shareObligation, ownerPaid, sharePaid,
+          ownerOverUnder, shareOverUnder, advance, netToOwner, netToShare, expenses
+      });
+
+      // Show results and scroll to them
+      resultsDiv.classList.remove('hidden');
+      resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    function renderResults(data) {
+        const { name, sales, totalExpenses, profit, profitEach, ownerObligation, shareObligation, ownerPaid, sharePaid, ownerOverUnder, shareOverUnder, advance, netToOwner, netToShare, expenses } = data;
+
+        const getStatusClass = (val) => val >= 0 ? 'text-green-600' : 'text-red-600';
+        
+        let settlementAction;
+        if (sales > 0 || totalExpenses > 0) {
+            settlementAction = `
+                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg mt-6">
+                    <h4 class="font-bold text-indigo-800">Settlement Action</h4>
+                    <p class="mt-1 text-indigo-700">From the total sales of <strong>${money(sales)}</strong>, the final distribution should be:</p>
+                    <ul class="list-disc list-inside mt-2 space-y-1">
+                        <li>Pay <strong>${money(netToOwner)}</strong> to the <strong>Owner</strong>.</li>
+                        <li>Pay <strong>${money(netToShare)}</strong> to the <strong>${name}</strong>.</li>
+                    </ul>
+                    <p class="text-xs mt-2 text-indigo-600">Note: Total payout (${money(netToOwner + netToShare)}) equals the calculated profit (${money(profit)}). The remaining cash from sales (${money(totalExpenses)}) covers all expenses.</p>
+                </div>
+            `;
+        } else {
+             settlementAction = `
+                <div class="bg-gray-100 p-4 rounded-lg mt-6">
+                    <p class="text-gray-700">Enter sales and expense figures to see the final settlement action.</p>
+                </div>
+             `;
+        }
+
+        resultsDiv.innerHTML = `
+            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Settlement Results</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-6">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-green-700 font-medium">Total Sales</p>
+                    <p class="text-2xl font-bold text-green-800">${money(sales)}</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <p class="text-sm text-red-700 font-medium">Total Expenses</p>
+                    <p class="text-2xl font-bold text-red-800">${money(totalExpenses)}</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-blue-700 font-medium">Net Profit / Loss</p>
+                    <p class="text-2xl font-bold ${getStatusClass(profit)}">${money(profit)}</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mono text-sm">
+                    <div>
+                        <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">Owner's Ledger</h3>
+                        <dl class="space-y-2">
+                            <div class="flex justify-between"><dt>Profit Share (50%):</dt><dd>${money(profitEach)}</dd></div>
+                            <div class="flex justify-between"><dt>Expenses Paid:</dt><dd>${money(ownerPaid)}</dd></div>
+                            <div class="flex justify-between"><dt>Expense Obligation:</dt><dd>- ${money(ownerObligation)}</dd></div>
+                            <div class="flex justify-between border-t pt-2"><dt>Sub-total:</dt><dd class="${getStatusClass(ownerOverUnder)}">${money(ownerOverUnder)}</dd></div>
+                            <div class="flex justify-between"><dt>Advance Repayment:</dt><dd>+ ${money(advance)}</dd></div>
+                            <div class="flex justify-between font-bold text-base border-t mt-2 pt-2"><dt>Final Net:</dt><dd class="${getStatusClass(netToOwner)}">${money(netToOwner)}</dd></div>
+                        </dl>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">${name}'s Ledger</h3>
+                        <dl class="space-y-2">
+                            <div class="flex justify-between"><dt>Profit Share (50%):</dt><dd>${money(profitEach)}</dd></div>
+                            <div class="flex justify-between"><dt>Expenses Paid:</dt><dd>${money(sharePaid)}</dd></div>
+                            <div class="flex justify-between"><dt>Expense Obligation:</dt><dd>- ${money(shareObligation)}</dd></div>
+                            <div class="flex justify-between border-t pt-2"><dt>Sub-total:</dt><dd class="${getStatusClass(shareOverUnder)}">${money(shareOverUnder)}</dd></div>
+                            <div class="flex justify-between"><dt>Advance Taken:</dt><dd>- ${money(advance)}</dd></div>
+                            <div class="flex justify-between font-bold text-base border-t mt-2 pt-2"><dt>Final Net:</dt><dd class="${getStatusClass(netToShare)}">${money(netToShare)}</dd></div>
+                        </dl>
+                    </div>
+                </div>
+                ${settlementAction}
+            </div>
+        `;
+    }
+  </script>
+</body>
+</html>
