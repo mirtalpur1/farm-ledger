@@ -19,21 +19,53 @@
     .expense-row:hover .remove-btn {
         opacity: 1;
     }
+    
+    /* --- SPECIAL PRINT STYLES --- */
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact; /* Ensures colors print in Chrome */
+        print-color-adjust: exact;
+      }
+      .no-print {
+        display: none !important;
+      }
+      #ledgerResult {
+        display: block !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .print-friendly {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        padding: 1rem !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .print-friendly-note {
+          border: 1px solid #ccc !important;
+      }
+      h2, h3, dt, dd {
+          color: #000 !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
   <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-    <div class="text-center mb-8">
+    <div class="text-center mb-8 no-print">
         <h1 class="text-3xl font-bold text-green-800">Farm Ledger</h1>
         <p class="text-lg text-gray-600">Consolidated Settlement Calculator</p>
     </div>
 
-    <form id="ledgerForm" class="space-y-6">
+    <form id="ledgerForm" class="space-y-6 no-print">
         <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 space-y-4">
             <div>
                 <label for="sharecropperName" class="block text-sm font-medium text-gray-700">Sharecropper Name</label>
-                <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" placeholder="e.g. Shahbaz Ali" required>
+                <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" placeholder="e.g. Lakhman" required>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -50,15 +82,13 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                 <h2 class="text-base font-semibold text-gray-900 mb-4">Expenses Paid by Owner</h2>
-                <div id="ownerExpensesContainer" class="space-y-3">
-                    </div>
+                <div id="ownerExpensesContainer" class="space-y-3"></div>
                 <button type="button" onclick="addExpenseRow('owner')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">+ Add Expense</button>
             </div>
 
             <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                 <h2 class="text-base font-semibold text-gray-900 mb-4">Expenses Paid by Sharecropper</h2>
-                <div id="sharecropperExpensesContainer" class="space-y-3">
-                    </div>
+                <div id="sharecropperExpensesContainer" class="space-y-3"></div>
                 <button type="button" onclick="addExpenseRow('sharecropper')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">+ Add Expense</button>
             </div>
         </div>
@@ -105,7 +135,6 @@
         container.appendChild(row);
     }
 
-    // Initialize with one empty row for each
     window.onload = () => {
         addExpenseRow('owner');
         addExpenseRow('sharecropper');
@@ -115,6 +144,12 @@
     const calculateButton = document.getElementById('calculateLedger');
     const resetButton = document.getElementById('resetForm');
     const resultsDiv = document.getElementById('ledgerResult');
+
+    document.body.addEventListener('click', function(event) {
+        if (event.target && event.target.id === 'printButton') {
+            window.print();
+        }
+    });
 
     resetButton.addEventListener('click', () => {
       document.getElementById('ledgerForm').reset();
@@ -128,8 +163,6 @@
 
     calculateButton.addEventListener('click', () => {
         const name = document.getElementById('sharecropperName').value.trim() || 'Sharecropper';
-
-        // --- 1. GATHER INPUTS ---
         const sales = parseFloat(document.getElementById('salesAmount').value) || 0;
         const advance = parseFloat(document.getElementById('cashAdvance').value) || 0;
 
@@ -145,7 +178,6 @@
             }
         });
 
-        // --- 2. CALCULATE TOTALS AND SUBTOTALS ---
         const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
         const inputsTotal = expenses.filter(e => ['Fertilizer', 'Pesticides', 'Seeds'].includes(e.type)).reduce((sum, exp) => sum + exp.amount, 0);
         const labourTotal = expenses.filter(e => e.type === 'Labour').reduce((sum, exp) => sum + exp.amount, 0);
@@ -155,21 +187,17 @@
         const profit = sales - totalExpenses;
         const profitEach = profit / 2;
 
-        // --- 3. DETERMINE OBLIGATIONS (Standard Sharecropping Rules) ---
         const ownerObligation = (inputsTotal * 0.5) + otherTotal;
         const shareObligation = (inputsTotal * 0.5) + labourTotal + ploughingTotal;
 
-        // --- 4. CALCULATE ACTUAL PAYMENTS ---
         const ownerPaid = expenses.filter(e => e.paidBy === 'Owner').reduce((sum, exp) => sum + exp.amount, 0);
         const sharePaid = expenses.filter(e => e.paidBy === 'Sharecropper').reduce((sum, exp) => sum + exp.amount, 0);
         
-        // --- 5. RECONCILE & CALCULATE FINAL NET ---
         const ownerOverUnder = ownerPaid - ownerObligation;
         const shareOverUnder = sharePaid - shareObligation;
         const netToOwner = profitEach + ownerOverUnder + advance;
         const netToShare = profitEach + shareOverUnder - advance;
 
-        // --- 6. RENDER RESULTS ---
         renderResults({
             name, sales, advance, totalExpenses, inputsTotal, labourTotal, ploughingTotal, otherTotal,
             profit, profitEach, ownerObligation, shareObligation, ownerPaid, sharePaid,
@@ -199,11 +227,20 @@
             settlementNote = 'Enter sales and expense figures to see the settlement action.';
         }
 
-        resultsDiv.innerHTML = `
-            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Settlement Breakdown</h2>
-            <div class="space-y-4 mono text-sm">
+        const currentDate = new Date().toLocaleString('en-PK', { dateStyle: 'full', timeStyle: 'short' });
 
-                <div class="bg-white p-4 rounded-lg shadow-sm border">
+        resultsDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Settlement Breakdown</h2>
+                <button id="printButton" class="no-print bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-900 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-14a2 2 0 10-4 0 2 2 0 004 0z"></path></svg>
+                    Print
+                </button>
+            </div>
+            <div class="space-y-4 mono text-sm">
+                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border text-xs text-gray-600">Generated on: ${currentDate}</div>
+                
+                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
                     <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">1. Summary</h3>
                     <dl class="space-y-1">
                         <div class="flex justify-between"><dt>Total Sales:</dt><dd class="font-bold text-green-700">${money(sales)}</dd></div>
@@ -217,7 +254,7 @@
                     </dl>
                 </div>
 
-                <div class="bg-white p-4 rounded-lg shadow-sm border">
+                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
                     <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">2. Obligations (By Rule)</h3>
                     <dl class="space-y-1">
                         <div class="flex justify-between"><dt>Owner's Obligation:</dt><dd>${money(ownerObligation)}</dd></div>
@@ -225,7 +262,7 @@
                     </dl>
                 </div>
 
-                <div class="bg-white p-4 rounded-lg shadow-sm border">
+                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
                     <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">3. Actual Payments</h3>
                     <dl class="space-y-1">
                         <div class="flex justify-between"><dt>Owner Actually Paid:</dt><dd>${money(ownerPaid)}</dd></div>
@@ -234,7 +271,7 @@
                     </dl>
                 </div>
                 
-                <div class="bg-white p-4 rounded-lg shadow-sm border">
+                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
                     <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">4. Over / Under Payment (Paid - Obligation)</h3>
                     <dl class="space-y-1">
                         <div class="flex justify-between"><dt>Owner Balance:</dt><dd class="${getStatusClass(ownerOverUnder)}">${money(ownerOverUnder)} <span class="text-xs text-gray-500">${getStatusText(ownerOverUnder)}</span></dd></div>
@@ -242,7 +279,7 @@
                     </dl>
                 </div>
 
-                <div class="bg-white p-4 rounded-lg shadow-sm border">
+                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
                     <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">5. Final Net Settlement</h3>
                     <p class="text-xs text-gray-500 mb-2">Formula: (Profit Share) + (Over/Under Payment) +/- (Advance)</p>
                     <dl class="space-y-1">
@@ -251,7 +288,7 @@
                     </dl>
                 </div>
 
-                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+                <div class="print-friendly-note bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
                     <h3 class="font-bold text-indigo-800">6. Settlement Notes</h3>
                     <p class="mt-1 text-indigo-900 font-semibold">${settlementNote}</p>
                 </div>
@@ -261,4 +298,3 @@
   </script>
 </body>
 </html>
-
