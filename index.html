@@ -196,7 +196,7 @@
         const ploughingTotal = expenses.filter(e => e.type === 'Ploughing').reduce((sum, exp) => sum + exp.amount, 0);
         const otherTotal = expenses.filter(e => e.type === 'Other').reduce((sum, exp) => sum + exp.amount, 0);
         
-        const profit = sales - totalExpenses;
+        const profit = sales - inputsTotal; // Modified to subtract only fertilizer, pesticide, and seed costs
         const profitEach = profit / 2; // Reverted to fixed 50/50 split
 
         const ownerObligation = (inputsTotal * 0.5) + otherTotal;
