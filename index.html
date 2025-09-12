@@ -19,6 +19,9 @@
     .expense-row:hover .remove-btn {
         opacity: 1;
     }
+    .urdu-label {
+        font-family: 'Noto Naskh Arabic', 'Urdu Typesetting', sans-serif;
+    }
     
     /* --- SPECIAL PRINT STYLES --- */
     @media print {
@@ -156,7 +159,6 @@
         const ploughingTotal = expenses.filter(e => e.type === 'Ploughing').reduce((sum, exp) => sum + exp.amount, 0);
         const otherTotal = expenses.filter(e => e.type === 'Other').reduce((sum, exp) => sum + exp.amount, 0);
         
-        // --- SHARED RECONCILIATION LOGIC ---
         const ownerObligation = (inputsTotal * 0.5) + otherTotal;
         const shareObligation = (inputsTotal * 0.5) + labourTotal + ploughingTotal;
         const ownerPaid = expenses.filter(e => e.paidBy === 'Owner').reduce((sum, exp) => sum + exp.amount, 0);
@@ -164,13 +166,11 @@
         const ownerOverUnder = ownerPaid - ownerObligation;
         const shareOverUnder = sharePaid - shareObligation;
         
-        // --- 1. BUSINESS PRINCIPLES CALCULATION ---
         const businessProfit = sales - totalExpenses;
         const businessProfitEach = businessProfit / 2;
         const businessNetToOwner = businessProfitEach + ownerOverUnder + advance;
         const businessNetToShare = businessProfitEach + shareOverUnder - advance;
 
-        // --- 2. CUSTOMARY PRINCIPLES CALCULATION ---
         const customaryDeductedExpenses = totalExpenses - labourTotal - ploughingTotal;
         const customaryProfit = sales - customaryDeductedExpenses;
         const customaryProfitEach = customaryProfit / 2;
@@ -179,20 +179,8 @@
 
         renderResults({
             name, sales, advance,
-            business: {
-                deductedExpenses: totalExpenses,
-                profit: businessProfit,
-                profitShare: businessProfitEach,
-                netToOwner: businessNetToOwner,
-                netToShare: businessNetToShare
-            },
-            customary: {
-                deductedExpenses: customaryDeductedExpenses,
-                profit: customaryProfit,
-                profitShare: customaryProfitEach,
-                netToOwner: customaryNetToOwner,
-                netToShare: customaryNetToShare
-            },
+            business: { deductedExpenses: totalExpenses, profit: businessProfit, profitShare: businessProfitEach, netToOwner: businessNetToOwner, netToShare: businessNetToShare },
+            customary: { deductedExpenses: customaryDeductedExpenses, profit: customaryProfit, profitShare: customaryProfitEach, netToOwner: customaryNetToOwner, netToShare: customaryNetToShare },
             adjustments: { ownerOverUnder, shareOverUnder }
         });
 
@@ -205,45 +193,61 @@
         const money = (val) => `PKR ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         const getStatusClass = (val) => val >= 0 ? 'text-green-600' : 'text-red-600';
         
-        const createBreakdownHTML = (title, values) => `
+        const createBreakdownHTML = (engTitle, urduTitle, values, isBusiness) => {
+            const noteEng = isBusiness 
+                ? 'All expenses are deducted before profit sharing.' 
+                : 'Only shared costs are deducted before profit sharing.';
+            const noteUrdu = isBusiness 
+                ? 'تمام اخراجات منافع کی تقسیم سے پہلے منہا کیے جاتے ہیں۔'
+                : 'منافع کی تقسیم سے پہلے صرف مشترکہ اخراجات منہا کیے جاتے ہیں۔';
+
+            return `
             <div class="print-friendly bg-white p-5 rounded-lg shadow-sm border flex flex-col h-full">
-                <h3 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-3">${title}</h3>
-                <dl class="space-y-1.5 mono text-sm flex-grow">
-                    <div class="flex justify-between"><dt>Total Sales:</dt><dd class="font-semibold text-green-700">${money(sales)}</dd></div>
-                    <div class="flex justify-between"><dt>Deducted Expenses:</dt><dd class="font-semibold text-red-700">- ${money(values.deductedExpenses)}</dd></div>
-                    <div class="flex justify-between border-t pt-2 mt-2"><dt>Net Profit:</dt><dd class="font-bold ${getStatusClass(values.profit)}">${money(values.profit)}</dd></div>
-                    <div class="flex justify-between"><dt>Owner's Share (50%):</dt><dd>${money(values.profitShare)}</dd></div>
-                    <div class="flex justify-between"><dt>${name}'s Share (50%):</dt><dd>${money(values.profitShare)}</dd></div>
+                <h3 class="text-lg font-bold text-indigo-700 text-center">
+                    ${engTitle}
+                    <span class="block text-sm font-normal text-gray-500 urdu-label">${urduTitle}</span>
+                </h3>
+                <dl class="space-y-2.5 mono text-sm flex-grow mt-4">
+                    <div class="flex justify-between items-center"><dt>Total Sales<span class="block text-xs text-gray-500 urdu-label">(کل فروخت)</span></dt><dd class="font-semibold text-green-700">${money(sales)}</dd></div>
+                    <div class="flex justify-between items-center"><dt>Deducted Expenses<span class="block text-xs text-gray-500 urdu-label">(منہا شدہ اخراجات)</span></dt><dd class="font-semibold text-red-700">- ${money(values.deductedExpenses)}</dd></div>
+                    <div class="flex justify-between items-center border-t pt-2 mt-2"><dt>Net Profit<span class="block text-xs text-gray-500 urdu-label">(خالص منافع)</span></dt><dd class="font-bold ${getStatusClass(values.profit)}">${money(values.profit)}</dd></div>
+                    <div class="flex justify-between items-center"><dt>Owner's Share (50%)<span class="block text-xs text-gray-500 urdu-label">(مالک کا حصہ)</span></dt><dd>${money(values.profitShare)}</dd></div>
+                    <div class="flex justify-between items-center"><dt>${name}'s Share (50%)<span class="block text-xs text-gray-500 urdu-label">(ہاری کا حصہ)</span></dt><dd>${money(values.profitShare)}</dd></div>
                     
                     <div class="border-t pt-2 mt-2">
-                        <div class="flex justify-between"><dt>Owner Adjustments:</dt><dd class="${getStatusClass(adjustments.ownerOverUnder)}">${money(adjustments.ownerOverUnder)}</dd></div>
-                        <div class="flex justify-between"><dt>${name} Adjustments:</dt><dd class="${getStatusClass(adjustments.shareOverUnder)}">${money(adjustments.shareOverUnder)}</dd></div>
-                        <div class="flex justify-between"><dt>Cash Advance:</dt><dd>${money(advance)}</dd></div>
+                        <div class="flex justify-between items-center"><dt>Owner Adjustments<span class="block text-xs text-gray-500 urdu-label">(مالک کی ایڈجسٹمنٹ)</span></dt><dd class="${getStatusClass(adjustments.ownerOverUnder)}">${money(adjustments.ownerOverUnder)}</dd></div>
+                        <div class="flex justify-between items-center"><dt>${name}'s Adjustments<span class="block text-xs text-gray-500 urdu-label">(ہاری کی ایڈجسٹمنٹ)</span></dt><dd class="${getStatusClass(adjustments.shareOverUnder)}">${money(adjustments.shareOverUnder)}</dd></div>
+                        <div class="flex justify-between items-center"><dt>Cash Advance<span class="block text-xs text-gray-500 urdu-label">(پیشگی رقم)</span></dt><dd>${money(advance)}</dd></div>
                     </div>
                     
                     <div class="border-t pt-2 mt-2">
-                        <div class="flex justify-between font-bold text-base"><dt>Owner Final Net:</dt><dd class="${getStatusClass(values.netToOwner)}">${money(values.netToOwner)}</dd></div>
-                        <div class="flex justify-between font-bold text-base"><dt>${name} Final Net:</dt><dd class="${getStatusClass(values.netToShare)}">${money(values.netToShare)}</dd></div>
+                        <div class="flex justify-between items-center font-bold text-base"><dt>Owner Final Net<span class="block text-xs text-gray-500 urdu-label">(مالک کا حتمی بقایا)</span></dt><dd class="${getStatusClass(values.netToOwner)}">${money(values.netToOwner)}</dd></div>
+                        <div class="flex justify-between items-center font-bold text-base"><dt>${name} Final Net<span class="block text-xs text-gray-500 urdu-label">(ہاری کا حتمی بقایا)</span></dt><dd class="${getStatusClass(values.netToShare)}">${money(values.netToShare)}</dd></div>
                     </div>
                 </dl>
                 <div class="mt-4 text-xs bg-gray-50 p-2 rounded border">
-                    <p class="font-semibold">Principle Used:</p>
-                    <p class="text-gray-600">${title === 'Business Principles Settlement' ? 'All expenses are deducted from sales before splitting the profit.' : 'Only shared expenses (Inputs, Other) are deducted before splitting profit. Labour/Ploughing are settled from the Sharecropper\'s final share.'}</p>
+                    <p class="font-semibold">Note:</p>
+                    <p class="text-gray-600">${noteEng}</p>
+                    <p class="text-gray-600 urdu-label text-right mt-1">${noteUrdu}</p>
                 </div>
             </div>
         `;
+        };
 
         resultsDiv.innerHTML = `
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Settlement Comparison for ${name}</h2>
+                <h2 class="text-2xl font-bold text-gray-800">
+                    Settlement Comparison for ${name}
+                    <span class="block text-lg font-normal text-gray-500 urdu-label">${name} کے لیے تصفیہ کا موازنہ</span>
+                </h2>
                 <button id="printButton" class="no-print bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-900 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2..."></path></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-14a2 2 0 10-4 0 2 2 0 004 0z"></path></svg>
                     Print
                 </button>
             </div>
-            <div class="print-grid grid grid-cols-1 md:grid-cols-2 gap-6">
-                ${createBreakdownHTML('Business Principles Settlement', business)}
-                ${createBreakdownHTML('Customary Principles Settlement', customary)}
+            <div class="print-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
+                ${createBreakdownHTML('Business Principles Settlement', '(کاروباری اصولوں پر تصفیہ)', business, true)}
+                ${createBreakdownHTML('Customary Principles Settlement', '(روایتی اصولوں پر تصفیہ)', customary, false)}
             </div>
         `;
     }
