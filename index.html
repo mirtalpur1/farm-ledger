@@ -37,15 +37,16 @@
         margin: 0 !important;
         max-width: 100% !important;
       }
+      .print-grid {
+        display: block !important; /* Stack columns on print */
+      }
       .print-friendly {
         box-shadow: none !important;
         border: 1px solid #ccc !important;
         padding: 1rem !important;
         background: #fff !important;
         color: #000 !important;
-      }
-      .print-friendly-note {
-          border: 1px solid #ccc !important;
+        page-break-inside: avoid;
       }
       h2, h3, dt, dd {
           color: #000 !important;
@@ -55,7 +56,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-  <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+  <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
     <div class="text-center mb-8 no-print">
         <h1 class="text-3xl font-bold text-green-800">Farm Ledger</h1>
         <p class="text-lg text-gray-600">Consolidated Settlement Calculator</p>
@@ -63,14 +64,7 @@
 
     <div class="bg-blue-50 border border-blue-200 text-blue-800 p-5 rounded-lg mb-6 no-print">
         <h2 class="font-bold text-lg">Welcome to the Farm Ledger</h2>
-        <p class="mt-2 text-sm">This tool helps farm owners and sharecroppers (Haris) calculate the final settlement at the end of a crop season. Simply enter the total sales, expenses, and any cash advances to generate a detailed, printable breakdown.</p>
-        <p class="mt-3 font-semibold text-sm">Calculation Principles:</p>
-        <ul class="list-disc list-inside text-sm mt-1 space-y-1">
-            <li><strong>Profit/Loss</strong> is shared <strong>50/50</strong> between the Owner and Sharecropper.</li>
-            <li><strong>Inputs</strong> (Fertilizer, Pesticides, Seeds) are split <strong>50/50</strong>.</li>
-            <li><strong>Operational Costs</strong> (Labour, Ploughing) are the <strong>100% responsibility of the Sharecropper</strong>.</li>
-            <li><strong>Other Costs</strong> are the <strong>100% responsibility of the Owner</strong>.</li>
-        </ul>
+        <p class="mt-2 text-sm">This tool calculates sharecropper settlements using two common methods. Simply enter the sales and expenses to see a side-by-side comparison of the "Formal Business" and "Customary Hari" practices.</p>
     </div>
 
     <form id="ledgerForm" class="space-y-6 no-print">
@@ -97,7 +91,6 @@
                 <div id="ownerExpensesContainer" class="space-y-3"></div>
                 <button type="button" onclick="addExpenseRow('owner')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">+ Add Expense</button>
             </div>
-
             <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                 <h2 class="text-base font-semibold text-gray-900 mb-4">Expenses Paid by Sharecropper</h2>
                 <div id="sharecropperExpensesContainer" class="space-y-3"></div>
@@ -107,7 +100,7 @@
 
         <div class="flex flex-col sm:flex-row gap-3 pt-2">
           <button type="button" id="calculateLedger" class="flex-1 bg-indigo-600 text-white font-semibold p-3 rounded-md hover:bg-indigo-700">
-            Calculate Settlement
+            Calculate Settlements
           </button>
           <button type="button" id="resetForm" class="flex-1 bg-gray-200 text-gray-700 font-semibold p-3 rounded-md hover:bg-gray-300">
             Reset
@@ -115,8 +108,7 @@
         </div>
       </form>
 
-    <div id="ledgerResult" class="mt-10 hidden">
-        </div>
+    <div id="ledgerResult" class="mt-10 hidden"></div>
 
   </div>
 
@@ -128,49 +120,23 @@
         const row = document.createElement('div');
         row.className = 'expense-row grid grid-cols-12 gap-2 items-center';
         row.setAttribute('data-payer', payer);
-
         const options = expenseTypes.map(type => `<option value="${type}">${type}</option>`).join('');
-
-        row.innerHTML = `
-            <div class="col-span-5">
-                <input type="number" min="0" step="0.01" placeholder="Amount" class="w-full p-2 border border-gray-300 rounded-md amount-input" value="0">
-            </div>
-            <div class="col-span-6">
-                <select class="w-full p-2 border border-gray-300 rounded-md type-select">${options}</select>
-            </div>
-            <div class="col-span-1 text-right">
-                <button type="button" class="remove-btn text-red-500 hover:text-red-700 opacity-25 transition-opacity" onclick="this.parentElement.parentElement.remove()">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-        `;
+        row.innerHTML = `<div class="col-span-5"><input type="number" min="0" step="0.01" placeholder="Amount" class="w-full p-2 border border-gray-300 rounded-md amount-input" value="0"></div><div class="col-span-6"><select class="w-full p-2 border border-gray-300 rounded-md type-select">${options}</select></div><div class="col-span-1 text-right"><button type="button" class="remove-btn text-red-500 hover:text-red-700 opacity-25" onclick="this.parentElement.parentElement.remove()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div>`;
         container.appendChild(row);
     }
     
-    window.onload = () => {
-        addExpenseRow('owner');
-        addExpenseRow('sharecropper');
-    };
+    window.onload = () => { addExpenseRow('owner'); addExpenseRow('sharecropper'); };
 
-    // --- MAIN SCRIPT ---
     const calculateButton = document.getElementById('calculateLedger');
     const resetButton = document.getElementById('resetForm');
     const resultsDiv = document.getElementById('ledgerResult');
 
-    document.body.addEventListener('click', function(event) {
-        if (event.target && event.target.id === 'printButton') {
-            window.print();
-        }
-    });
-
+    document.body.addEventListener('click', (event) => { if (event.target && event.target.id === 'printButton') window.print(); });
     resetButton.addEventListener('click', () => {
-      document.getElementById('ledgerForm').reset();
-      document.getElementById('ownerExpensesContainer').innerHTML = '';
-      document.getElementById('sharecropperExpensesContainer').innerHTML = '';
-      addExpenseRow('owner');
-      addExpenseRow('sharecropper');
-      resultsDiv.innerHTML = '';
-      resultsDiv.classList.add('hidden');
+        document.getElementById('ledgerForm').reset();
+        ['ownerExpensesContainer', 'sharecropperExpensesContainer'].forEach(id => document.getElementById(id).innerHTML = '');
+        addExpenseRow('owner'); addExpenseRow('sharecropper');
+        resultsDiv.innerHTML = ''; resultsDiv.classList.add('hidden');
     });
 
     calculateButton.addEventListener('click', () => {
@@ -181,13 +147,7 @@
         const expenses = [];
         document.querySelectorAll('.expense-row').forEach(row => {
             const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
-            if (amount > 0) {
-                expenses.push({
-                    amount: amount,
-                    type: row.querySelector('.type-select').value,
-                    paidBy: row.getAttribute('data-payer') === 'owner' ? 'Owner' : 'Sharecropper'
-                });
-            }
+            if (amount > 0) expenses.push({ amount, type: row.querySelector('.type-select').value, paidBy: row.getAttribute('data-payer') === 'owner' ? 'Owner' : 'Sharecropper' });
         });
 
         const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -196,26 +156,44 @@
         const ploughingTotal = expenses.filter(e => e.type === 'Ploughing').reduce((sum, exp) => sum + exp.amount, 0);
         const otherTotal = expenses.filter(e => e.type === 'Other').reduce((sum, exp) => sum + exp.amount, 0);
         
-        const profit = sales - inputsTotal; // Modified to subtract only fertilizer, pesticide, and seed costs
-        const profitEach = profit / 2; // Reverted to fixed 50/50 split
-
+        // --- SHARED RECONCILIATION LOGIC ---
         const ownerObligation = (inputsTotal * 0.5) + otherTotal;
         const shareObligation = (inputsTotal * 0.5) + labourTotal + ploughingTotal;
-
         const ownerPaid = expenses.filter(e => e.paidBy === 'Owner').reduce((sum, exp) => sum + exp.amount, 0);
         const sharePaid = expenses.filter(e => e.paidBy === 'Sharecropper').reduce((sum, exp) => sum + exp.amount, 0);
-        
         const ownerOverUnder = ownerPaid - ownerObligation;
         const shareOverUnder = sharePaid - shareObligation;
         
-        const netToOwner = profitEach + ownerOverUnder + advance;
-        const netToShare = profitEach + shareOverUnder - advance;
+        // --- 1. BUSINESS PRINCIPLES CALCULATION ---
+        const businessProfit = sales - totalExpenses;
+        const businessProfitEach = businessProfit / 2;
+        const businessNetToOwner = businessProfitEach + ownerOverUnder + advance;
+        const businessNetToShare = businessProfitEach + shareOverUnder - advance;
+
+        // --- 2. CUSTOMARY PRINCIPLES CALCULATION ---
+        const customaryDeductedExpenses = totalExpenses - labourTotal - ploughingTotal;
+        const customaryProfit = sales - customaryDeductedExpenses;
+        const customaryProfitEach = customaryProfit / 2;
+        const customaryNetToOwner = customaryProfitEach + ownerOverUnder + advance;
+        const customaryNetToShare = customaryProfitEach + shareOverUnder - advance;
 
         renderResults({
-            name, sales, advance, totalExpenses, inputsTotal, labourTotal, ploughingTotal, otherTotal,
-            profit, profitEach,
-            ownerObligation, shareObligation, ownerPaid, sharePaid,
-            ownerOverUnder, shareOverUnder, netToOwner, netToShare
+            name, sales, advance,
+            business: {
+                deductedExpenses: totalExpenses,
+                profit: businessProfit,
+                profitShare: businessProfitEach,
+                netToOwner: businessNetToOwner,
+                netToShare: businessNetToShare
+            },
+            customary: {
+                deductedExpenses: customaryDeductedExpenses,
+                profit: customaryProfit,
+                profitShare: customaryProfitEach,
+                netToOwner: customaryNetToOwner,
+                netToShare: customaryNetToShare
+            },
+            adjustments: { ownerOverUnder, shareOverUnder }
         });
 
         resultsDiv.classList.remove('hidden');
@@ -223,90 +201,49 @@
     });
 
     function renderResults(data) {
-        const { name, sales, advance, totalExpenses, inputsTotal, labourTotal, ploughingTotal, otherTotal, profit, profitEach, ownerObligation, shareObligation, ownerPaid, sharePaid, ownerOverUnder, shareOverUnder, netToOwner, netToShare } = data;
+        const { name, sales, advance, business, customary, adjustments } = data;
         const money = (val) => `PKR ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        
         const getStatusClass = (val) => val >= 0 ? 'text-green-600' : 'text-red-600';
-        const getStatusText = (val) => val >= 0 ? '(Overpaid / Credit)' : '(Underpaid / Debit)';
-        const getFinalStatusText = (val) => val >= 0 ? '(Receive)' : '(Owes)';
-
-        let settlementNote = '';
-        if (netToShare < 0) {
-            settlementNote = `${name} pays the Owner ${money(Math.abs(netToShare))}.`;
-        } else if (netToOwner < 0) {
-            settlementNote = `The Owner pays ${name} ${money(Math.abs(netToOwner))}.`;
-        } else if (sales > 0 || totalExpenses > 0) {
-             settlementNote = `Both parties receive their share from the total sales proceeds. No further payment between parties is required.`;
-        } else {
-            settlementNote = 'Enter sales and expense figures to see the settlement action.';
-        }
-
-        const currentDate = new Date().toLocaleString('en-PK', { dateStyle: 'full', timeStyle: 'short' });
+        
+        const createBreakdownHTML = (title, values) => `
+            <div class="print-friendly bg-white p-5 rounded-lg shadow-sm border flex flex-col h-full">
+                <h3 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-3">${title}</h3>
+                <dl class="space-y-1.5 mono text-sm flex-grow">
+                    <div class="flex justify-between"><dt>Total Sales:</dt><dd class="font-semibold text-green-700">${money(sales)}</dd></div>
+                    <div class="flex justify-between"><dt>Deducted Expenses:</dt><dd class="font-semibold text-red-700">- ${money(values.deductedExpenses)}</dd></div>
+                    <div class="flex justify-between border-t pt-2 mt-2"><dt>Net Profit:</dt><dd class="font-bold ${getStatusClass(values.profit)}">${money(values.profit)}</dd></div>
+                    <div class="flex justify-between"><dt>Owner's Share (50%):</dt><dd>${money(values.profitShare)}</dd></div>
+                    <div class="flex justify-between"><dt>${name}'s Share (50%):</dt><dd>${money(values.profitShare)}</dd></div>
+                    
+                    <div class="border-t pt-2 mt-2">
+                        <div class="flex justify-between"><dt>Owner Adjustments:</dt><dd class="${getStatusClass(adjustments.ownerOverUnder)}">${money(adjustments.ownerOverUnder)}</dd></div>
+                        <div class="flex justify-between"><dt>${name} Adjustments:</dt><dd class="${getStatusClass(adjustments.shareOverUnder)}">${money(adjustments.shareOverUnder)}</dd></div>
+                        <div class="flex justify-between"><dt>Cash Advance:</dt><dd>${money(advance)}</dd></div>
+                    </div>
+                    
+                    <div class="border-t pt-2 mt-2">
+                        <div class="flex justify-between font-bold text-base"><dt>Owner Final Net:</dt><dd class="${getStatusClass(values.netToOwner)}">${money(values.netToOwner)}</dd></div>
+                        <div class="flex justify-between font-bold text-base"><dt>${name} Final Net:</dt><dd class="${getStatusClass(values.netToShare)}">${money(values.netToShare)}</dd></div>
+                    </div>
+                </dl>
+                <div class="mt-4 text-xs bg-gray-50 p-2 rounded border">
+                    <p class="font-semibold">Principle Used:</p>
+                    <p class="text-gray-600">${title === 'Business Principles Settlement' ? 'All expenses are deducted from sales before splitting the profit.' : 'Only shared expenses (Inputs, Other) are deducted before splitting profit. Labour/Ploughing are settled from the Sharecropper\'s final share.'}</p>
+                </div>
+            </div>
+        `;
 
         resultsDiv.innerHTML = `
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Settlement for ${name}</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Settlement Comparison for ${name}</h2>
                 <button id="printButton" class="no-print bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-900 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-14a2 2 0 10-4 0 2 2 0 004 0z"></path></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2..."></path></svg>
                     Print
                 </button>
             </div>
-            <div class="space-y-4 mono text-sm">
-                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border text-xs text-gray-600">Generated on: ${currentDate}</div>
-                
-                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
-                    <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">1. Summary</h3>
-                    <dl class="space-y-1">
-                        <div class="flex justify-between"><dt>Total Sales:</dt><dd class="font-bold text-green-700">${money(sales)}</dd></div>
-                        <div class="flex justify-between"><dt>Total Expenses:</dt><dd class="font-bold text-red-700">- ${money(totalExpenses)}</dd></div>
-                        <div class="flex justify-between pl-4 text-gray-600"><dt>• Inputs:</dt><dd>${money(inputsTotal)}</dd></div>
-                        <div class="flex justify-between pl-4 text-gray-600"><dt>• Labour:</dt><dd>${money(labourTotal)}</dd></div>
-                        <div class="flex justify-between pl-4 text-gray-600"><dt>• Ploughing:</dt><dd>${money(ploughingTotal)}</dd></div>
-                        <div class="flex justify-between pl-4 text-gray-600"><dt>• Other:</dt><dd>${money(otherTotal)}</dd></div>
-                        <div class="flex justify-between border-t pt-2 mt-1"><dt>Net Profit:</dt><dd class="font-bold ${getStatusClass(profit)}">${money(profit)}</dd></div>
-                        <div class="flex justify-between"><dt>Owner's Profit Share (50%):</dt><dd class="${getStatusClass(profitEach)}">${money(profitEach)}</dd></div>
-                        <div class="flex justify-between"><dt>${name}'s Profit Share (50%):</dt><dd class="${getStatusClass(profitEach)}">${money(profitEach)}</dd></div>
-                    </dl>
-                </div>
-
-                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
-                    <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">2. Obligations (By Rule)</h3>
-                    <dl class="space-y-1">
-                        <div class="flex justify-between"><dt>Owner's Obligation:</dt><dd>${money(ownerObligation)}</dd></div>
-                        <div class="flex justify-between"><dt>${name}'s Obligation:</dt><dd>${money(shareObligation)}</dd></div>
-                    </dl>
-                </div>
-
-                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
-                    <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">3. Actual Payments</h3>
-                    <dl class="space-y-1">
-                        <div class="flex justify-between"><dt>Owner Actually Paid:</dt><dd>${money(ownerPaid)}</dd></div>
-                        <div class="flex justify-between"><dt>${name} Actually Paid:</dt><dd>${money(sharePaid)}</dd></div>
-                        <div class="flex justify-between"><dt>Cash Advance (Owner → ${name}):</dt><dd>${money(advance)}</dd></div>
-                    </dl>
-                </div>
-                
-                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
-                    <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">4. Over / Under Payment (Paid - Obligation)</h3>
-                    <dl class="space-y-1">
-                        <div class="flex justify-between"><dt>Owner Balance:</dt><dd class="${getStatusClass(ownerOverUnder)}">${money(ownerOverUnder)} <span class="text-xs text-gray-500">${getStatusText(ownerOverUnder)}</span></dd></div>
-                        <div class="flex justify-between"><dt>${name}'s Balance:</dt><dd class="${getStatusClass(shareOverUnder)}">${money(shareOverUnder)} <span class="text-xs text-gray-500">${getStatusText(shareOverUnder)}</span></dd></div>
-                    </dl>
-                </div>
-
-                <div class="print-friendly bg-white p-4 rounded-lg shadow-sm border">
-                    <h3 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">5. Final Net Settlement</h3>
-                    <p class="text-xs text-gray-500 mb-2">Formula: (Profit Share) + (Expense Balance) +/- (Advance)</p>
-                    <dl class="space-y-1">
-                        <div class="flex justify-between font-bold"><dt>Owner Final Net:</dt><dd class="${getStatusClass(netToOwner)}">${money(netToOwner)} <span class="text-sm font-medium">${getFinalStatusText(netToOwner)}</span></dd></div>
-                        <div class="flex justify-between font-bold"><dt>${name}'s Final Net:</dt><dd class="${getStatusClass(netToShare)}">${money(netToShare)} <span class="text-sm font-medium">${getFinalStatusText(netToShare)}</span></dd></div>
-                    </dl>
-                </div>
-
-                <div class="print-friendly-note bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
-                    <h3 class="font-bold text-indigo-800">6. Settlement Notes</h3>
-                    <p class="mt-1 text-indigo-900 font-semibold">${settlementNote}</p>
-                </div>
+            <div class="print-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+                ${createBreakdownHTML('Business Principles Settlement', business)}
+                ${createBreakdownHTML('Customary Principles Settlement', customary)}
             </div>
         `;
     }
