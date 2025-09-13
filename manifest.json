@@ -2,7 +2,7 @@
 {
   "name": "Farm Ledger",
   "short_name": "FarmLedger",
-  "start_url": "/farm-ledger/",
+  "start_url": "/farm-ledger/index.html",
   "scope": "/farm-ledger/",
   "display": "standalone",
   "background_color": "#ffffff",
