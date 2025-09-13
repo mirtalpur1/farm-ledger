@@ -1,43 +1,57 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <link rel="manifest" href="/farm-ledger/manifest.json">
-<meta name="theme-color" content="#2c3e50">
- <meta charset="utf-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Farm Ledger — Consolidated Settlement</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/farm-ledger/manifest.json">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#2c3e50">
+
+  <!-- Favicon (tab icon) -->
+  <link rel="icon" href="/farm-ledger/icons/icon-192.png" type="image/png">
+
+  <!-- Apple Touch Icon (iOS homescreen) -->
+  <link rel="apple-touch-icon" href="/farm-ledger/icons/icon-192.png">
+
+  <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Custom styles -->
   <style>
     body { font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
     .mono { font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace; }
     
-    /* Apply Noto Naskh Arabic font when Urdu is selected */
     html[lang="ur"] body, html[lang="ur"] .urdu-font {
         font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
     }
 
     input:focus, select:focus {
       outline: none;
-      box-shadow: 0 0 0 2px #4f46e5; /* Indigo-500 */
+      box-shadow: 0 0 0 2px #4f46e5;
       border-color: #6366f1;
     }
+
     .expense-row:hover .remove-btn { opacity: 1; }
-    
+
     .lang-btn.active {
-        background-color: #4f46e5; /* Indigo-600 */
+        background-color: #4f46e5;
         color: white;
         font-weight: bold;
     }
 
-    /* RTL adjustments */
     html[dir="rtl"] .flex-row { flex-direction: row-reverse; }
     html[dir="rtl"] .text-left { text-align: right; }
     html[dir="rtl"] .text-right { text-align: left; }
     html[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-right: 0.5rem; margin-left: 0; }
-
 
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -49,6 +63,7 @@
     }
   </style>
 </head>
+
 <body class="bg-gray-50 text-gray-800">
 
   <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -366,9 +381,8 @@ if ("serviceWorker" in navigator) {
 
 </body>
 
-   <a href='http://www.freevisitorcounters.com'>more information</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=54ee32788a74960ec0fbe26aa92e5a84b64012e0'></script>
-<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1390185/t/13"></script>
-</html>
+
+
 
 
 
