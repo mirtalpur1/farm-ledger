@@ -1,4 +1,4 @@
-const CACHE_NAME = 'farm-ledger-cache-v1';
+const CACHE_NAME = 'farm-ledger-cache-v2';
 const urlsToCache = [
   '/farm-ledger/',
   '/farm-ledger/index.html',
@@ -9,31 +9,43 @@ const urlsToCache = [
   '/farm-ledger/icons/icon-512.png'
 ];
 
-self.addEventListener('install', (event) => {
+// Install service worker
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache);
     })
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    }).catch(() => caches.match('/farm-ledger/offline.html'))
-  );
-});
-
-self.addEventListener('activate', (event) => {
+// Activate service worker
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
+    caches.keys().then(cacheNames =>
+      Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
           }
         })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// Fetch requests
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    caches.match(event.request).then(cachedResponse => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).catch(() =>
+        caches.match('/farm-ledger/offline.html')
       );
     })
   );
