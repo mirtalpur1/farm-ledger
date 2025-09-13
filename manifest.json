@@ -1,6 +1,7 @@
 {
+{
   "name": "Farm Ledger",
-  "short_name": "Ledger",
+  "short_name": "FarmLedger",
   "start_url": "/farm-ledger/",
   "scope": "/farm-ledger/",
   "display": "standalone",
