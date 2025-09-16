@@ -303,11 +303,22 @@
         const customaryNetToOwner = customaryProfitEach + ownerOverUnder + advance;
         const customaryNetToShare = customaryProfitEach + shareOverUnder - advance;
 
-        renderResults({
+        const resultData = {
             name, sales, advance,
             business: { deductedExpenses: totalExpenses, profit: businessProfit, profitShare: businessProfitEach, netToOwner: businessNetToOwner, netToShare: businessNetToShare },
             customary: { deductedExpenses: customaryDeductedExpenses, profit: customaryProfit, profitShare: customaryProfitEach, netToOwner: customaryNetToOwner, netToShare: customaryNetToShare },
             adjustments: { ownerOverUnder, shareOverUnder }
+        };
+
+        renderResults(resultData);
+
+        // Save the record locally for offline access and later export/sync
+        saveRecord({
+          name,
+          sales,
+          advance,
+          business: { deductedExpenses: resultData.business.deductedExpenses, profit: resultData.business.profit, netToOwner: resultData.business.netToOwner, netToShare: resultData.business.netToShare },
+          customary: { deductedExpenses: resultData.customary.deductedExpenses, profit: resultData.customary.profit, netToOwner: resultData.customary.netToOwner, netToShare: resultData.customary.netToShare }
         });
 
         resultsDiv.classList.remove('hidden');
@@ -363,11 +374,85 @@
             </div>`;
     }
 
+    // --- Offline storage & UI (localStorage) ---
+    const LOCAL_KEY = 'farmLedger_records_v1';
+    function loadLocalRecords() {
+      try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); }
+      catch(e) { return []; }
+    }
+    function saveLocalRecords(records) {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(records));
+    }
+    function saveRecord(record) {
+      const records = loadLocalRecords();
+      record.savedAt = new Date().toISOString();
+      records.unshift(record);
+      // keep only last 200 records to avoid huge storage
+      if (records.length > 200) records.length = 200;
+      saveLocalRecords(records);
+      renderLocalList();
+    }
+    function exportCsv() {
+      const records = loadLocalRecords();
+      if (records.length === 0) { alert('No records to export'); return; }
+      const headers = Object.keys(records[0]);
+      const csv = [headers.join(',')].concat(records.map(r => headers.map(h => `"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(','))).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'farm-ledger-records.csv'; a.click();
+      URL.revokeObjectURL(url);
+    }
+    function renderLocalList() {
+      let container = document.getElementById('savedRecordsContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'savedRecordsContainer';
+        container.className = 'mt-6 p-3 bg-white border rounded';
+        document.querySelector('.max-w-6xl').appendChild(container);
+      }
+      const records = loadLocalRecords();
+      if (records.length === 0) {
+        container.innerHTML = '<strong>Saved records:</strong> none';
+        return;
+      }
+      container.innerHTML = `<div class="flex justify-between items-center"><strong>Saved records</strong>
+        <div><button id="exportCsvBtn" class="px-2 py-1 bg-gray-200 rounded">Export CSV</button> <button id="clearLocalBtn" class="px-2 py-1 bg-red-100 rounded">Clear</button></div></div>
+        <ul class="mt-2 text-sm max-h-40 overflow-auto">${records.slice(0,20).map(r => `<li class="py-1 border-b">${r.savedAt} — ${r.name} — Sales:${r.sales}</li>`).join('')}</ul>`;
+      document.getElementById('exportCsvBtn').onclick = exportCsv;
+      document.getElementById('clearLocalBtn').onclick = () => { if(confirm('Clear saved records?')) { saveLocalRecords([]); renderLocalList(); } };
+    }
+    async function trySync() {
+      if (!navigator.onLine) return;
+      const records = loadLocalRecords();
+      if (!records.length) return;
+      // Placeholder: mark as synced locally. Replace with server POST if needed.
+      const updated = records.map(r => r.syncedAt ? r : Object.assign({}, r, { syncedAt: new Date().toISOString() }));
+      saveLocalRecords(updated);
+      renderLocalList();
+    }
+
+    // Offline/online banner
+    function updateOnlineStatus() {
+      if (!document.getElementById('offlineBanner')) {
+        const banner = document.createElement('div');
+        banner.id = 'offlineBanner';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#f59e0b;color:#111;padding:6px 10px;text-align:center;z-index:9999;font-weight:600;display:none';
+        banner.innerText = 'You are offline — using cached data. Entries are saved locally.';
+        document.body.appendChild(banner);
+      }
+      const b = document.getElementById('offlineBanner');
+      if (navigator.onLine) b.style.display = 'none'; else b.style.display = 'block';
+    }
+    window.addEventListener('online', () => { updateOnlineStatus(); trySync(); });
+    window.addEventListener('offline', updateOnlineStatus);
+
     // Initial page load
     document.addEventListener('DOMContentLoaded', () => {
         setLanguage(currentLang);
         addExpenseRow('owner'); 
         addExpenseRow('sharecropper');
+        updateOnlineStatus();
+        renderLocalList();
     });
 
   </script>
@@ -380,9 +465,4 @@ if ("serviceWorker" in navigator) {
 </script>
 
 </body>
-
-
-
-
-
-
+</html>
