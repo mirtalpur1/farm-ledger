@@ -1,92 +1,106 @@
-// /farm-ledger/sw.js
+// sw.js (robust installer + runtime caching)
 const CACHE_NAME = 'farm-ledger-cache-v3';
 const CORE_ASSETS = [
-  '/farm-ledger/',
-  '/farm-ledger/index.html',
-  '/farm-ledger/styles.css',
-  '/farm-ledger/script.js',
-  '/farm-ledger/offline.html',
-  '/farm-ledger/icons/icon-192.png',
-  '/farm-ledger/icons/icon-512.png'
+  '/',                // root
+  'index.html',
+  'styles.css',
+  'script.js',
+  'offline.html',
+  'icons/icon-192.png',
+  'icons/icon-512.png'
 ];
 
-// Install: pre-cache core assets
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE_ASSETS))
-  );
-  self.skipWaiting();
+// Helper to try caching one item and return status
+async function tryCacheOne(cache, url) {
+  try {
+    const req = new Request(url, { mode: 'no-cors' }); // no-cors helps with opaque responses but may be limited
+    const resp = await fetch(req);
+    if (!resp || (resp.status && resp.status >= 400)) {
+      throw new Error(`HTTP ${resp && resp.status}`);
+    }
+    await cache.put(url, resp.clone());
+    return { url, ok: true };
+  } catch (err) {
+    return { url, ok: false, error: err && err.message ? err.message : String(err) };
+  }
+}
+
+// Install: try cache each asset and report failures (so SW still installs)
+self.addEventListener('install', (event) => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const results = await Promise.all(CORE_ASSETS.map(url => tryCacheOne(cache, url)));
+    const failed = results.filter(r => !r.ok);
+    if (failed.length) {
+      console.warn('Service worker: some resources failed to cache during install:', failed);
+      // Optionally: you can remove failed items from cache if needed
+    } else {
+      console.log('Service worker: all core assets cached.');
+    }
+    // continue install regardless of failures
+    self.skipWaiting();
+  })());
 });
 
-// Activate: clean old caches
-self.addEventListener('activate', event => {
+// Activate: cleanup old caches
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => (k !== CACHE_NAME) ? caches.delete(k) : null))
-    )
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Helper: network-first for navigations (get latest, fallback to cache/offline)
+// Navigation handler: network-first fallback-to-cache
 async function handleNavigation(request) {
   try {
     const response = await fetch(request);
-    // Optionally update cache for navigation
+    // update cache with fresh navigation response (optional)
     const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
+    cache.put(request, response.clone()).catch(()=>{/* ignore cache put error */});
     return response;
   } catch (err) {
-    // network failed -> try cache, then offline fallback
-    const cached = await caches.match('/farm-ledger/index.html') || await caches.match('/farm-ledger/');
+    const cached = await caches.match('index.html');
     if (cached) return cached;
-    const offline = await caches.match('/farm-ledger/offline.html');
+    const offline = await caches.match('offline.html');
     return offline || new Response('Offline', { status: 503, statusText: 'Offline' });
   }
 }
 
 // Fetch handler
-self.addEventListener('fetch', event => {
-  // only handle GET
+self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const reqUrl = new URL(event.request.url);
 
-  // For navigation requests -> network first, then cache, then offline page
+  // Navigation requests
   if (event.request.mode === 'navigate') {
     event.respondWith(handleNavigation(event.request));
     return;
   }
 
-  // For other same-origin requests -> cache-first
+  // Same-origin static assets -> cache-first then network
   if (reqUrl.origin === location.origin) {
     event.respondWith(
-      caches.match(event.request).then(cached => {
+      caches.match(event.request).then((cached) => {
         if (cached) return cached;
-        return fetch(event.request)
-          .then(resp => {
-            // cache runtime resources (images, scripts) but skip opaque errors
-            if (resp && resp.status === 200) {
-              const copy = resp.clone();
-              caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-            }
-            return resp;
-          })
-          .catch(() => {
-            // fallback for images -> offline icon (optional)
-            if (event.request.destination === 'image') {
-              return caches.match('/farm-ledger/icons/icon-192.png');
-            }
-            return caches.match('/farm-ledger/offline.html');
-          });
+        return fetch(event.request).then((resp) => {
+          if (resp && resp.ok) {
+            const copy = resp.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          }
+          return resp;
+        }).catch(() => {
+          if (event.request.destination === 'image') {
+            return caches.match('icons/icon-192.png');
+          }
+          return caches.match('offline.html');
+        });
       })
     );
     return;
   }
 
-  // For cross-origin requests (ads/analytics) -> try network fallback to nothing
-  event.respondWith(
-    fetch(event.request).catch(() => new Response('', { status: 504, statusText: 'Network error' }))
-  );
+  // Cross-origin -> try network only
+  event.respondWith(fetch(event.request).catch(() => new Response('', { status: 504 })));
 });
