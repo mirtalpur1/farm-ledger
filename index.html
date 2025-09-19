@@ -5,18 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Farm Ledger — Consolidated Settlement</title>
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="/farm-ledger/manifest.json">
-
-  <!-- Theme color -->
-  <meta name="theme-color" content="#2c3e50">
-
-  <!-- Favicon (tab icon) -->
-  <link rel="icon" href="/farm-ledger/icons/icon-192.png" type="image/png">
-
-  <!-- Apple Touch Icon (iOS homescreen) -->
-  <link rel="apple-touch-icon" href="/farm-ledger/icons/icon-192.png">
-
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 
@@ -25,41 +13,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
 
-  <!-- Custom styles -->
   <style>
     body { font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
     .mono { font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace; }
-    
     html[lang="ur"] body, html[lang="ur"] .urdu-font {
         font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
     }
-
     input:focus, select:focus {
       outline: none;
       box-shadow: 0 0 0 2px #4f46e5;
       border-color: #6366f1;
     }
-
     .expense-row:hover .remove-btn { opacity: 1; }
-
     .lang-btn.active {
         background-color: #4f46e5;
         color: white;
         font-weight: bold;
     }
-
     html[dir="rtl"] .flex-row { flex-direction: row-reverse; }
     html[dir="rtl"] .text-left { text-align: right; }
     html[dir="rtl"] .text-right { text-align: left; }
-    html[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-right: 0.5rem; margin-left: 0; }
-
     @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none !important; }
       #ledgerResult { display: block !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-      .print-grid { display: block !important; }
-      .print-friendly { box-shadow: none !important; border: 1px solid #ccc !important; padding: 1rem !important; background: #fff !important; color: #000 !important; page-break-inside: avoid; }
-      h2, h3, dt, dd { color: #000 !important; }
     }
   </style>
 </head>
@@ -88,7 +64,7 @@
         <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 space-y-4">
             <div>
                 <label for="sharecropperName" class="block text-sm font-medium text-gray-700" data-i18n="sharecropperNameLabel">Sharecropper (Hari) Name</label>
-                <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" data-i18n-placeholder="sharecropperNamePlaceholder" placeholder="e.g. Shahbaz" required>
+                <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" data-i18n-placeholder="sharecropperNamePlaceholder" placeholder="e.g. Shahbaz">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -125,7 +101,7 @@
   </div>
 
   <script>
-    // --- I18N (TRANSLATION) SETUP ---
+    // translations kept for bilingual UI
     const translations = {
         en: {
             mainTitle: "Farm Ledger",
@@ -163,7 +139,7 @@
             sharecropperFinalNet: "'s Final Net",
             note: "Note:",
             businessNote: "All expenses are deducted before profit sharing.",
-            customaryNote: "Only shared costs are deducted before profit sharing."
+            customaryNote: "Ploughing & Labour are not deducted from sales (considered HARI's responsibility); they are handled separately."
         },
         ur: {
             mainTitle: "زرعی لیجر",
@@ -185,7 +161,7 @@
             seeds: "بیج",
             labour: "مزدوری",
             ploughing: "ہل چلائی",
-            other: "دیگر اخراجات",
+            other: "دیگر",
             resultsTitle: "کے لیے تصفیہ کا موازنہ",
             businessTitle: "کاروباری اصولوں پر تصفیہ",
             customaryTitle: "روایتی اصولوں پر تصفیہ",
@@ -201,55 +177,74 @@
             sharecropperFinalNet: " کا حتمی بقایا",
             note: "نوٹ:",
             businessNote: "تمام اخراجات منافع کی تقسیم سے پہلے منہا کیے جاتے ہیں۔",
-            customaryNote: "منافع کی تقسیم سے پہلے صرف مشترکہ اخراجات منہا کیے جاتے ہیں۔"
+            customaryNote: "پلاؤٔنگ اور مزدوری کو فروخت سے منہا نہیں کیا جاتا — یہ عموماً ہاری کی ذمہ داری مانا جاتا ہے۔"
         }
     };
 
     let currentLang = localStorage.getItem('appLang') || 'en';
+    const expenseKeys = ['fertilizer', 'pesticides', 'seeds', 'labour', 'ploughing', 'other'];
 
     function setLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('appLang', lang);
-
         document.documentElement.lang = lang;
         document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
 
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
-            el.innerText = translations[lang][key];
+            if (translations[lang][key]) el.innerText = translations[lang][key];
         });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
             const key = el.getAttribute('data-i18n-placeholder');
-            el.placeholder = translations[lang][key];
+            if (translations[lang][key]) el.placeholder = translations[lang][key];
         });
 
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
         });
 
+        // Update existing expense rows option labels
         document.querySelectorAll('.expense-row').forEach(row => {
-            row.querySelectorAll('option').forEach(option => {
-                option.innerText = translations[lang][option.value];
-            });
+            const select = row.querySelector('.type-select');
+            if (!select) return;
+            // rebuild options preserving values
+            select.innerHTML = expenseKeys.map(k => `<option value="${k}">${translations[currentLang][k]}</option>`).join('');
+            // keep previously selected if possible
+            const prev = select.getAttribute('data-selected');
+            if (prev) select.value = prev;
         });
 
+        // if results visible, recalc to update language text
         if (!resultsDiv.classList.contains('hidden')) {
             calculateButton.click();
         }
     }
-
-    const expenseKeys = ['fertilizer', 'pesticides', 'seeds', 'labour', 'ploughing', 'other'];
 
     function addExpenseRow(payer) {
         const container = document.getElementById(`${payer}ExpensesContainer`);
         const row = document.createElement('div');
         row.className = 'expense-row grid grid-cols-12 gap-2 items-center';
         row.setAttribute('data-payer', payer);
+
+        // build options using currentLang
         const options = expenseKeys.map(key => `<option value="${key}">${translations[currentLang][key]}</option>`).join('');
-        row.innerHTML = `<div class="col-span-5"><input type="number" min="0" step="0.01" placeholder="Amount" class="w-full p-2 border border-gray-300 rounded-md amount-input" value="0"></div><div class="col-span-6"><select class="w-full p-2 border border-gray-300 rounded-md type-select">${options}</select></div><div class="col-span-1 text-right"><button type="button" class="remove-btn text-red-500 hover:text-red-700 opacity-25" onclick="this.parentElement.parentElement.remove()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div>`;
+        row.innerHTML = `
+          <div class="col-span-5"><input type="number" min="0" step="0.01" placeholder="Amount" class="w-full p-2 border border-gray-300 rounded-md amount-input" value="0"></div>
+          <div class="col-span-6"><select class="w-full p-2 border border-gray-300 rounded-md type-select" data-selected=""></select></div>
+          <div class="col-span-1 text-right"><button type="button" class="remove-btn text-red-500 hover:text-red-700 opacity-75" title="Remove" onclick="this.closest('.expense-row').remove()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button></div>`;
         container.appendChild(row);
+
+        // set select options and attach change to keep selected state
+        const select = row.querySelector('.type-select');
+        select.innerHTML = options;
+        select.addEventListener('change', () => select.setAttribute('data-selected', select.value));
+        // default to 'other' visually
+        select.value = 'other';
+        select.setAttribute('data-selected', 'other');
     }
-    
+
     const calculateButton = document.getElementById('calculateLedger');
     const resetButton = document.getElementById('resetForm');
     const resultsDiv = document.getElementById('ledgerResult');
@@ -260,7 +255,6 @@
         }
     });
 
-    document.body.addEventListener('click', (event) => { if (event.target.id === 'printButton') window.print(); });
     resetButton.addEventListener('click', () => {
         document.getElementById('ledgerForm').reset();
         ['ownerExpensesContainer', 'sharecropperExpensesContainer'].forEach(id => document.getElementById(id).innerHTML = '');
@@ -272,51 +266,82 @@
         const name = document.getElementById('sharecropperName').value.trim() || 'Sharecropper';
         const sales = parseFloat(document.getElementById('salesAmount').value) || 0;
         const advance = parseFloat(document.getElementById('cashAdvance').value) || 0;
-        
+
+        // collect expenses from both containers
         const expenses = [];
         document.querySelectorAll('.expense-row').forEach(row => {
             const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
-            if (amount > 0) expenses.push({ amount, type: row.querySelector('.type-select').value, paidBy: row.getAttribute('data-payer') === 'owner' ? 'Owner' : 'Sharecropper' });
+            const type = row.querySelector('.type-select').value;
+            const paidBy = row.getAttribute('data-payer') === 'owner' ? 'Owner' : 'Sharecropper';
+            // record even zero amounts to keep UI lists consistent (but skip zeros for totals)
+            expenses.push({ amount, type, paidBy });
         });
 
-        const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-        const inputsTotal = expenses.filter(e => ['fertilizer', 'pesticides', 'seeds'].includes(e.type)).reduce((sum, exp) => sum + exp.amount, 0);
-        const labourTotal = expenses.filter(e => e.type === 'labour').reduce((sum, exp) => sum + exp.amount, 0);
-        const ploughingTotal = expenses.filter(e => e.type === 'ploughing').reduce((sum, exp) => sum + exp.amount, 0);
-        const otherTotal = expenses.filter(e => e.type === 'other').reduce((sum, exp) => sum + exp.amount, 0);
-        
-        const ownerObligation = (inputsTotal * 0.5) + otherTotal;
-        const shareObligation = (inputsTotal * 0.5) + labourTotal + ploughingTotal;
-        const ownerPaid = expenses.filter(e => e.paidBy === 'Owner').reduce((sum, exp) => sum + exp.amount, 0);
-        const sharePaid = expenses.filter(e => e.paidBy === 'Sharecropper').reduce((sum, exp) => sum + exp.amount, 0);
+        // totals by category
+        const totalExpenses = expenses.reduce((s,e) => s + e.amount, 0);
+        const inputsTotal = expenses.filter(e => ['fertilizer','pesticides','seeds'].includes(e.type)).reduce((s,e) => s + e.amount, 0);
+        const labourTotal = expenses.filter(e => e.type === 'labour').reduce((s,e) => s + e.amount, 0);
+        const ploughingTotal = expenses.filter(e => e.type === 'ploughing').reduce((s,e) => s + e.amount, 0);
+        const otherTotal = expenses.filter(e => e.type === 'other').reduce((s,e) => s + e.amount, 0);
+
+        // obligations (rules remain same)
+        const ownerObligation_inputs = inputsTotal * 0.5;
+        const shareObligation_inputs = inputsTotal * 0.5;
+        const ownerObligation_other = otherTotal; // other assigned to owner by default
+        const ownerObligation = ownerObligation_inputs + ownerObligation_other;
+        const shareObligation = shareObligation_inputs + labourTotal + ploughingTotal;
+
+        // who actually paid
+        const ownerPaid = expenses.filter(e => e.paidBy === 'Owner').reduce((s,e) => s + e.amount, 0);
+        const sharePaid = expenses.filter(e => e.paidBy === 'Sharecropper').reduce((s,e) => s + e.amount, 0);
+
+        // over/under payment relative to obligation
         const ownerOverUnder = ownerPaid - ownerObligation;
         const shareOverUnder = sharePaid - shareObligation;
-        
-        const businessProfit = sales - totalExpenses;
-        const businessProfitEach = businessProfit / 2;
-        const businessNetToOwner = businessProfitEach + ownerOverUnder + advance;
-        const businessNetToShare = businessProfitEach + shareOverUnder - advance;
 
-        const customaryDeductedExpenses = totalExpenses - labourTotal - ploughingTotal;
+        // -------------------------------
+        // Business principles (all expenses deducted)
+        // -------------------------------
+        const businessDeductedExpenses = totalExpenses;
+        const businessProfit = sales - businessDeductedExpenses;
+        const businessProfitEach = businessProfit / 2;
+
+        // IMPORTANT: cashAdvance is paid by Owner to Sharecropper during season:
+        // Owner final net should be: profitEach + (ownerPaid - ownerObligation) - cashAdvance
+        // Sharecropper final net should be: profitEach + (sharePaid - shareObligation) + cashAdvance
+        const businessNetToOwner = businessProfitEach + ownerOverUnder - advance;
+        const businessNetToShare = businessProfitEach + shareOverUnder + advance;
+
+        // -------------------------------
+        // Customary principles
+        // (labour & ploughing NOT deducted from sales)
+        // -------------------------------
+        const customaryDeductedExpenses = totalExpenses - labourTotal - ploughingTotal; // exclude labour & ploughing
         const customaryProfit = sales - customaryDeductedExpenses;
         const customaryProfitEach = customaryProfit / 2;
-        const customaryNetToOwner = customaryProfitEach + ownerOverUnder + advance;
-        const customaryNetToShare = customaryProfitEach + shareOverUnder - advance;
 
+        // Under customary we keep obligations the same (ownerObligation/ shareObligation still represent
+        // what each party should bear per the rules). Advance sign same as above.
+        const customaryNetToOwner = customaryProfitEach + ownerOverUnder - advance;
+        const customaryNetToShare = customaryProfitEach + shareOverUnder + advance;
+
+        // Prepare data for rendering
         const resultData = {
             name, sales, advance,
-            business: { deductedExpenses: totalExpenses, profit: businessProfit, profitShare: businessProfitEach, netToOwner: businessNetToOwner, netToShare: businessNetToShare },
+            totals: { totalExpenses, inputsTotal, labourTotal, ploughingTotal, otherTotal, ownerPaid, sharePaid },
+            business: { deductedExpenses: businessDeductedExpenses, profit: businessProfit, profitShare: businessProfitEach, netToOwner: businessNetToOwner, netToShare: businessNetToShare },
             customary: { deductedExpenses: customaryDeductedExpenses, profit: customaryProfit, profitShare: customaryProfitEach, netToOwner: customaryNetToOwner, netToShare: customaryNetToShare },
-            adjustments: { ownerOverUnder, shareOverUnder }
+            obligations: { ownerObligation, shareObligation, ownerObligation_inputs, shareObligation_inputs, ownerObligation_other },
+            adjustments: { ownerOverUnder, shareOverUnder },
+            expenseList: expenses
         };
 
         renderResults(resultData);
-
-        // Save the record locally for offline access and later export/sync
         saveRecord({
           name,
           sales,
           advance,
+          timestamp: new Date().toISOString(),
           business: { deductedExpenses: resultData.business.deductedExpenses, profit: resultData.business.profit, netToOwner: resultData.business.netToOwner, netToShare: resultData.business.netToShare },
           customary: { deductedExpenses: resultData.customary.deductedExpenses, profit: resultData.customary.profit, netToOwner: resultData.customary.netToOwner, netToShare: resultData.customary.netToShare }
         });
@@ -325,69 +350,146 @@
         resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
+    function money(val) {
+      return 'PKR ' + Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function posClass(val) { return val >= 0 ? 'text-green-600' : 'text-red-600'; }
+
     function renderResults(data) {
-        const { name, sales, advance, business, customary, adjustments } = data;
+        const { name, sales, advance, totals, business, customary, obligations, adjustments, expenseList } = data;
         const T = translations[currentLang];
-        const money = (val) => `PKR ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        const getStatusClass = (val) => val >= 0 ? 'text-green-600' : 'text-red-600';
-        
-        const createBreakdownHTML = (titleKey, values) => {
-            const noteKey = titleKey === 'businessTitle' ? 'businessNote' : 'customaryNote';
-            return `
-            <div class="print-friendly bg-white p-5 rounded-lg shadow-sm border flex flex-col h-full text-left">
-                <h3 class="text-lg font-bold text-indigo-700 text-center">${T[titleKey]}</h3>
-                <dl class="space-y-2.5 mono text-sm flex-grow mt-4">
-                    <div class="flex justify-between items-center"><dt>${T.totalSales}</dt><dd class="font-semibold text-green-700">${money(sales)}</dd></div>
-                    <div class="flex justify-between items-center"><dt>${T.deductedExpenses}</dt><dd class="font-semibold text-red-700">- ${money(values.deductedExpenses)}</dd></div>
-                    <div class="flex justify-between items-center border-t pt-2 mt-2"><dt>${T.netProfit}</dt><dd class="font-bold ${getStatusClass(values.profit)}">${money(values.profit)}</dd></div>
-                    <div class="flex justify-between items-center"><dt>${T.ownerShare}</dt><dd>${money(values.profitShare)}</dd></div>
-                    <div class="flex justify-between items-center"><dt>${name}${T.sharecropperShare}</dt><dd>${money(values.profitShare)}</dd></div>
-                    <div class="border-t pt-2 mt-2">
-                        <div class="flex justify-between items-center"><dt>${T.ownerAdjustments}</dt><dd class="${getStatusClass(adjustments.ownerOverUnder)}">${money(adjustments.ownerOverUnder)}</dd></div>
-                        <div class="flex justify-between items-center"><dt>${name}${T.sharecropperAdjustments}</dt><dd class="${getStatusClass(adjustments.shareOverUnder)}">${money(adjustments.shareOverUnder)}</dd></div>
-                        <div class="flex justify-between items-center"><dt>${T.cashAdvance}</dt><dd>${money(advance)}</dd></div>
-                    </div>
-                    <div class="border-t pt-2 mt-2">
-                        <div class="flex justify-between items-center font-bold text-base"><dt>${T.ownerFinalNet}</dt><dd class="${getStatusClass(values.netToOwner)}">${money(values.netToOwner)}</dd></div>
-                        <div class="flex justify-between items-center font-bold text-base"><dt>${name}${T.sharecropperFinalNet}</dt><dd class="${getStatusClass(values.netToShare)}">${money(values.netToShare)}</dd></div>
-                    </div>
-                </dl>
-                <div class="mt-4 text-xs bg-gray-50 p-2 rounded border">
-                    <p class="font-semibold">${T.note}</p>
-                    <p class="text-gray-600">${T[noteKey]}</p>
-                </div>
-            </div>`;
-        };
         const titleText = (currentLang === 'en') ? `${T.resultsTitle} ${name}` : `${name} ${T.resultsTitle}`;
 
+        // Build expense table rows (grouped by payer)
+        const ownerRows = expenseList.filter(e => e.paidBy === 'Owner' && e.amount > 0).map(e => `<tr><td class="py-1 text-sm">${translations[currentLang][e.type]}</td><td class="py-1 text-sm text-right">${money(e.amount)}</td></tr>`).join('');
+        const shareRows = expenseList.filter(e => e.paidBy === 'Sharecropper' && e.amount > 0).map(e => `<tr><td class="py-1 text-sm">${translations[currentLang][e.type]}</td><td class="py-1 text-sm text-right">${money(e.amount)}</td></tr>`).join('');
+
+        // Two cards side-by-side
         resultsDiv.innerHTML = `
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">${titleText}</h2>
-                <button id="printButton" class="no-print bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-900 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-14a2 2 0 10-4 0 2 2 0 004 0z"></path></svg>
-                    <span data-i18n="printBtn">${T.printBtn}</span>
-                </button>
+                <div class="no-print flex gap-2">
+                  <button id="printButton" class="bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-900">${T.printBtn}</button>
+                </div>
             </div>
-            <div class="print-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
-                ${createBreakdownHTML('businessTitle', business)}
-                ${createBreakdownHTML('customaryTitle', customary)}
-            </div>`;
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Business Principles -->
+              <div class="print-friendly bg-white p-5 rounded-lg shadow-sm border">
+                <h3 class="text-lg font-bold text-indigo-700 text-center mb-3">${T.businessTitle}</h3>
+
+                <div class="mb-3">
+                  <div class="flex justify-between"><div>${T.totalSales}</div><div class="font-semibold text-green-700">${money(sales)}</div></div>
+                  <div class="flex justify-between"><div>${T.deductedExpenses}</div><div class="font-semibold text-red-700">- ${money(business.deductedExpenses)}</div></div>
+                  <div class="border-t mt-2 pt-2 flex justify-between"><div>${T.netProfit}</div><div class="font-bold ${posClass(business.profit)}">${money(business.profit)}</div></div>
+                </div>
+
+                <div class="mb-2 text-sm">
+                  <div class="flex justify-between"><div>Inputs (Fert+Pest+Seeds)</div><div>${money(totals.inputsTotal)}</div></div>
+                  <div class="flex justify-between"><div>Labour</div><div>${money(totals.labourTotal)}</div></div>
+                  <div class="flex justify-between"><div>Ploughing</div><div>${money(totals.ploughingTotal)}</div></div>
+                  <div class="flex justify-between"><div>Other</div><div>${money(totals.otherTotal)}</div></div>
+                </div>
+
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between"><div>${T.ownerShare}</div><div>${money(business.profitShare)}</div></div>
+                  <div class="flex justify-between"><div>${name}${T.sharecropperShare}</div><div>${money(business.profitShare)}</div></div>
+                </div>
+
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between"><div>${T.ownerAdjustments}</div><div class="${posClass(adjustments.ownerOverUnder)}">${money(adjustments.ownerOverUnder)}</div></div>
+                  <div class="flex justify-between"><div>${name}${T.sharecropperAdjustments}</div><div class="${posClass(adjustments.shareOverUnder)}">${money(adjustments.shareOverUnder)}</div></div>
+                  <div class="flex justify-between"><div>${T.cashAdvance}</div><div>${money(advance)}</div></div>
+                </div>
+
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between font-bold text-base"><div>${T.ownerFinalNet}</div><div class="${posClass(business.netToOwner)}">${money(business.netToOwner)}</div></div>
+                  <div class="flex justify-between font-bold text-base"><div>${name}${T.sharecropperFinalNet}</div><div class="${posClass(business.netToShare)}">${money(business.netToShare)}</div></div>
+                </div>
+
+                <div class="mt-3 text-xs bg-gray-50 p-2 rounded border">
+                  <p class="font-semibold">${T.note}</p>
+                  <p class="text-gray-600">${T.businessNote}</p>
+                </div>
+              </div>
+
+              <!-- Customary Principles -->
+              <div class="print-friendly bg-white p-5 rounded-lg shadow-sm border">
+                <h3 class="text-lg font-bold text-indigo-700 text-center mb-3">${T.customaryTitle}</h3>
+
+                <div class="mb-3">
+                  <div class="flex justify-between"><div>${T.totalSales}</div><div class="font-semibold text-green-700">${money(sales)}</div></div>
+                  <div class="flex justify-between"><div>${T.deductedExpenses}</div><div class="font-semibold text-red-700">- ${money(customary.deductedExpenses)}</div></div>
+                  <div class="border-t mt-2 pt-2 flex justify-between"><div>${T.netProfit}</div><div class="font-bold ${posClass(customary.profit)}">${money(customary.profit)}</div></div>
+                </div>
+
+                <div class="mb-2 text-sm">
+                  <div class="flex justify-between"><div>Inputs (Fert+Pest+Seeds)</div><div>${money(totals.inputsTotal)}</div></div>
+                  <div class="flex justify-between"><div>Labour (excluded from profit)</div><div>${money(totals.labourTotal)}</div></div>
+                  <div class="flex justify-between"><div>Ploughing (excluded from profit)</div><div>${money(totals.ploughingTotal)}</div></div>
+                  <div class="flex justify-between"><div>Other</div><div>${money(totals.otherTotal)}</div></div>
+                </div>
+
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between"><div>${T.ownerShare}</div><div>${money(customary.profitShare)}</div></div>
+                  <div class="flex justify-between"><div>${name}${T.sharecropperShare}</div><div>${money(customary.profitShare)}</div></div>
+                </div>
+
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between"><div>${T.ownerAdjustments}</div><div class="${posClass(adjustments.ownerOverUnder)}">${money(adjustments.ownerOverUnder)}</div></div>
+                  <div class="flex justify-between"><div>${name}${T.sharecropperAdjustments}</div><div class="${posClass(adjustments.shareOverUnder)}">${money(adjustments.shareOverUnder)}</div></div>
+                  <div class="flex justify-between"><div>${T.cashAdvance}</div><div>${money(advance)}</div></div>
+                </div>
+
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between font-bold text-base"><div>${T.ownerFinalNet}</div><div class="${posClass(customary.netToOwner)}">${money(customary.netToOwner)}</div></div>
+                  <div class="flex justify-between font-bold text-base"><div>${name}${T.sharecropperFinalNet}</div><div class="${posClass(customary.netToShare)}">${money(customary.netToShare)}</div></div>
+                </div>
+
+                <div class="mt-3 text-xs bg-gray-50 p-2 rounded border">
+                  <p class="font-semibold">${T.note}</p>
+                  <p class="text-gray-600">${T.customaryNote}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payments detail lists -->
+            <div class="mt-6 bg-white p-4 rounded shadow-sm border">
+              <h4 class="font-semibold mb-2">Detailed payments (who paid what)</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div class="font-medium">Owner paid</div>
+                  <table class="w-full mt-2 text-sm"><tbody>
+                    ${ownerRows || '<tr><td class="text-sm text-gray-500">—</td><td></td></tr>'}
+                    <tr class="border-t"><td class="py-1 font-semibold">Total</td><td class="py-1 text-right font-semibold">${money(totals.ownerPaid)}</td></tr>
+                  </tbody></table>
+                </div>
+                <div>
+                  <div class="font-medium">${name} paid</div>
+                  <table class="w-full mt-2 text-sm"><tbody>
+                    ${shareRows || '<tr><td class="text-sm text-gray-500">—</td><td></td></tr>'}
+                    <tr class="border-t"><td class="py-1 font-semibold">Total</td><td class="py-1 text-right font-semibold">${money(totals.sharePaid)}</td></tr>
+                  </tbody></table>
+                </div>
+              </div>
+            </div>
+        `;
+
+        // Attach print button
+        document.getElementById('printButton').addEventListener('click', () => window.print());
     }
 
-    // --- Offline storage & UI (localStorage) ---
+    // --- Local storage & export features (unchanged) ---
     const LOCAL_KEY = 'farmLedger_records_v1';
     function loadLocalRecords() {
       try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); }
       catch(e) { return []; }
     }
-    function saveLocalRecords(records) {
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(records));
-    }
+    function saveLocalRecords(records) { localStorage.setItem(LOCAL_KEY, JSON.stringify(records)); }
     function saveRecord(record) {
       const records = loadLocalRecords();
       record.savedAt = new Date().toISOString();
       records.unshift(record);
-      // keep only last 200 records to avoid huge storage
       if (records.length > 200) records.length = 200;
       saveLocalRecords(records);
       renderLocalList();
@@ -421,17 +523,8 @@
       document.getElementById('exportCsvBtn').onclick = exportCsv;
       document.getElementById('clearLocalBtn').onclick = () => { if(confirm('Clear saved records?')) { saveLocalRecords([]); renderLocalList(); } };
     }
-    async function trySync() {
-      if (!navigator.onLine) return;
-      const records = loadLocalRecords();
-      if (!records.length) return;
-      // Placeholder: mark as synced locally. Replace with server POST if needed.
-      const updated = records.map(r => r.syncedAt ? r : Object.assign({}, r, { syncedAt: new Date().toISOString() }));
-      saveLocalRecords(updated);
-      renderLocalList();
-    }
 
-    // Offline/online banner
+    // Offline banner
     function updateOnlineStatus() {
       if (!document.getElementById('offlineBanner')) {
         const banner = document.createElement('div');
@@ -443,26 +536,23 @@
       const b = document.getElementById('offlineBanner');
       if (navigator.onLine) b.style.display = 'none'; else b.style.display = 'block';
     }
-    window.addEventListener('online', () => { updateOnlineStatus(); trySync(); });
+    window.addEventListener('online', () => { updateOnlineStatus(); });
     window.addEventListener('offline', updateOnlineStatus);
 
-    // Initial page load
+    // Init
     document.addEventListener('DOMContentLoaded', () => {
         setLanguage(currentLang);
-        addExpenseRow('owner'); 
-        addExpenseRow('sharecropper');
+        addExpenseRow('owner'); addExpenseRow('sharecropper');
         updateOnlineStatus();
         renderLocalList();
     });
 
+    // Service worker registration (optional)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/farm-ledger/sw.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.error("SW registration failed", err));
+    }
   </script>
-  <script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/farm-ledger/sw.js")
-    .then(() => console.log("Service Worker registered"))
-    .catch(err => console.error("SW registration failed", err));
-}
-</script>
-
 </body>
 </html>
