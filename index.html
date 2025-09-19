@@ -11,22 +11,43 @@
   <style>
     body { font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
     .mono { font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace; }
-    html[lang="ur"] body, html[lang="ur"] .urdu-font { font-family: 'Noto Naskh Arabic', 'Inter', sans-serif; }
-    input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px #4f46e5; border-color: #6366f1; }
+    
+    /* Apply Noto Naskh Arabic font when Urdu is selected */
+    html[lang="ur"] body, html[lang="ur"] .urdu-font {
+        font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #4f46e5; /* Indigo-500 */
+      border-color: #6366f1;
+    }
     .expense-row:hover .remove-btn { opacity: 1; }
-    .lang-btn.active { background-color: #4f46e5; color: white; font-weight: bold; }
+    
+    .lang-btn.active {
+        background-color: #4f46e5; /* Indigo-600 */
+        color: white;
+        font-weight: bold;
+    }
+
+    /* RTL adjustments */
+    html[dir="rtl"] .flex-row { flex-direction: row-reverse; }
     html[dir="rtl"] .text-left { text-align: right; }
     html[dir="rtl"] .text-right { text-align: left; }
+    html[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-right: 0.5rem; margin-left: 0; }
+
+
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none !important; }
-      #ledgerResult { display: block !important; margin-top: 0 !important; }
+      #ledgerResult { display: block !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
       .print-grid { display: block !important; }
-      .print-friendly { box-shadow: none !important; border: 1px solid #ddd !important; padding: 1rem !important; page-break-inside: avoid; }
+      .print-friendly { box-shadow: none !important; border: 1px solid #ccc !important; padding: 1rem !important; background: #fff !important; color: #000 !important; page-break-inside: avoid; }
+      h2, h3, dt, dd { color: #000 !important; }
     }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-50 text-gray-800">
 
   <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
     <div class="text-center mb-4 no-print">
@@ -35,7 +56,7 @@
     </div>
 
     <div id="lang-switcher" class="text-center mb-6 no-print">
-        <div class="inline-flex rounded-md shadow-sm">
+        <div class="inline-flex rounded-md shadow-sm" role="group">
             <button type="button" data-lang="en" class="lang-btn rounded-l-lg border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-900 hover:bg-gray-100">English</button>
             <button type="button" data-lang="ur" class="lang-btn rounded-r-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-900 hover:bg-gray-100 urdu-font">اردو</button>
         </div>
@@ -47,10 +68,10 @@
     </div>
 
     <form id="ledgerForm" class="space-y-6 no-print">
-        <div class="bg-white p-5 rounded-lg shadow border border-gray-200 space-y-4">
+        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 space-y-4">
             <div>
                 <label for="sharecropperName" class="block text-sm font-medium text-gray-700" data-i18n="sharecropperNameLabel">Sharecropper (Hari) Name</label>
-                <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" data-i18n-placeholder="sharecropperNamePlaceholder" placeholder="e.g. Shahbaz">
+                <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" data-i18n-placeholder="sharecropperNamePlaceholder" placeholder="e.g. Shahbaz" required>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -65,12 +86,12 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                 <h2 class="text-base font-semibold text-gray-900 mb-4" data-i18n="ownerExpensesTitle">Expenses Paid by Owner</h2>
                 <div id="ownerExpensesContainer" class="space-y-3"></div>
                 <button type="button" onclick="addExpenseRow('owner')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800" data-i18n="addExpenseBtn">+ Add Expense</button>
             </div>
-            <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                 <h2 class="text-base font-semibold text-gray-900 mb-4" data-i18n="sharecropperExpensesTitle">Expenses Paid by Sharecropper</h2>
                 <div id="sharecropperExpensesContainer" class="space-y-3"></div>
                 <button type="button" onclick="addExpenseRow('sharecropper')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800" data-i18n="addExpenseBtn">+ Add Expense</button>
@@ -87,59 +108,120 @@
   </div>
 
   <script>
+    // --- I18N (TRANSLATION) SETUP ---
     const translations = {
         en: {
-            mainTitle: "Farm Ledger", mainSubtitle: "Consolidated Settlement Calculator", welcomeTitle: "Welcome to the Farm Ledger",
+            mainTitle: "Farm Ledger",
+            mainSubtitle: "Consolidated Settlement Calculator",
+            welcomeTitle: "Welcome to the Farm Ledger",
             welcomeDesc: "This tool calculates sharecropper settlements using two common methods. Simply enter the sales and expenses to see a side-by-side comparison.",
-            sharecropperNameLabel: "Sharecropper (Hari) Name", sharecropperNamePlaceholder: "e.g. Shahbaz", totalSalesLabel: "Total Sales (PKR)",
-            cashAdvanceLabel: "Cash Advance to Sharecropper (PKR)", ownerExpensesTitle: "Expenses Paid by Owner", sharecropperExpensesTitle: "Expenses Paid by Sharecropper",
-            addExpenseBtn: "+ Add Expense", calculateBtn: "Calculate Settlements", resetBtn: "Reset", printBtn: "Print",
-            fertilizer: "Fertilizer", pesticides: "Pesticides", seeds: "Seeds", labour: "Labour", ploughing: "Ploughing", other: "Other",
-            resultsTitle: "Settlement Comparison for", businessTitle: "Business Principles", customaryTitle: "Customary Principles",
-            totalSales: "Total Sales", deductedExpenses: "Deducted Expenses", netProfit: "Net Profit",
-            ownerShare: "Owner's Share (50%)", sharecropperShare: "'s Share (50%)", finalSettlement: "Final Settlement",
-            ownerFinalNet: "Owner's Final Payout", sharecropperFinalNet: "'s Final Payout", amountOwed: "Amount Owed to Owner",
-            profitCalc: "Profit Calculation", expenseRecon: "Expense Reconciliation", obligation: "Obligation", paid: "Paid", balance: "Balance",
-            cashAdvance: "Cash Advance", note: "Note:",
-            businessNote: "All expenses are deducted from sales before profit is shared.",
-            customaryNote: "Labour & Ploughing are not deducted from sales; they are settled directly from the Hari's share of profit."
+            sharecropperNameLabel: "Sharecropper (Hari) Name",
+            sharecropperNamePlaceholder: "e.g. Shahbaz",
+            totalSalesLabel: "Total Sales (PKR)",
+            cashAdvanceLabel: "Cash Advance to Sharecropper (PKR)",
+            ownerExpensesTitle: "Expenses Paid by Owner",
+            sharecropperExpensesTitle: "Expenses Paid by Sharecropper",
+            addExpenseBtn: "+ Add Expense",
+            calculateBtn: "Calculate Settlements",
+            resetBtn: "Reset",
+            printBtn: "Print",
+            fertilizer: "Fertilizer",
+            pesticides: "Pesticides",
+            seeds: "Seeds",
+            labour: "Labour",
+            ploughing: "Ploughing",
+            other: "Other",
+            resultsTitle: "Settlement Comparison for",
+            businessTitle: "Business Principles Settlement",
+            customaryTitle: "Customary Principles Settlement",
+            totalSales: "Total Sales",
+            deductedExpenses: "Deducted Expenses",
+            netProfit: "Net Profit",
+            ownerShare: "Owner's Share (50%)",
+            sharecropperShare: "'s Share (50%)",
+            ownerAdjustments: "Owner Adjustments",
+            sharecropperAdjustments: "'s Adjustments",
+            cashAdvance: "Cash Advance",
+            ownerFinalNet: "Owner Final Net",
+            sharecropperFinalNet: "'s Final Net",
+            note: "Note:",
+            businessNote: "All expenses are deducted before profit sharing.",
+            customaryNote: "Only shared costs are deducted before profit sharing."
         },
         ur: {
-            mainTitle: "زرعی لیجر", mainSubtitle: "مشترکہ تصفیہ کیلکولیٹر", welcomeTitle: "زرعی لیجر میں خوش آمدید",
+            mainTitle: "زرعی لیجر",
+            mainSubtitle: "مشترکہ تصفیہ کیلکولیٹر",
+            welcomeTitle: "زرعی لیجر میں خوش آمدید",
             welcomeDesc: "یہ ٹول دو عام طریقوں کا استعمال کرتے ہوئے ہاری کے تصفیوں کا حساب کرتا ہے۔ موازنہ دیکھنے کے لیے بس فروخت اور اخراجات درج کریں۔",
-            sharecropperNameLabel: "ہاری کا نام", sharecropperNamePlaceholder: "مثال کے طور پر شہباز", totalSalesLabel: "کل فروخت (PKR)",
-            cashAdvanceLabel: "ہاری کو پیشگی رقم (PKR)", ownerExpensesTitle: "مالک کے ادا کردہ اخراجات", sharecropperExpensesTitle: "ہاری کے ادا کردہ اخراجات",
-            addExpenseBtn: "+ خرچ شامل کریں", calculateBtn: "تصفیہ کا حساب لگائیں", resetBtn: "ری سیٹ", printBtn: "پرنٹ",
-            fertilizer: "کھاد", pesticides: "کیڑے مار ادویات", seeds: "بیج", labour: "مزدوری", ploughing: "ہل چلائی", other: "دیگر",
-            resultsTitle: "کے لیے تصفیہ کا موازنہ", businessTitle: "کاروباری اصول", customaryTitle: "روایتی اصول",
-            totalSales: "کل فروخت", deductedExpenses: "منہا شدہ اخراجات", netProfit: "خالص منافع",
-            ownerShare: "مالک کا حصہ (50%)", sharecropperShare: " کا حصہ (50%)", finalSettlement: "حتمی تصفیہ",
-            ownerFinalNet: "مالک کی حتمی ادائیگی", sharecropperFinalNet: " کی حتمی ادائیگی", amountOwed: "مالک کو واجب الادا رقم",
-            profitCalc: "منافع کا حساب", expenseRecon: "اخراجات کا تصفیہ", obligation: "ذمہ داری", paid: "ادا کیا", balance: "بقایا",
-            cashAdvance: "پیشگی رقم", note: "نوٹ:",
-            businessNote: "منافع کی تقسیم سے پہلے تمام اخراجات فروخت سے منہا کیے جاتے ہیں۔",
-            customaryNote: "مزدوری اور ہل چلائی فروخت سے منہا نہیں کی جاتی؛ وہ براہ راست ہاری کے منافع کے حصے سے طے کی جاتی ہیں۔"
+            sharecropperNameLabel: "ہاری کا نام",
+            sharecropperNamePlaceholder: "مثال کے طور پر شہباز",
+            totalSalesLabel: "کل فروخت (PKR)",
+            cashAdvanceLabel: "ہاری کو پیشگی رقم (PKR)",
+            ownerExpensesTitle: "مالک کے ادا کردہ اخراجات",
+            sharecropperExpensesTitle: "ہاری کے ادا کردہ اخراجات",
+            addExpenseBtn: "+ خرچ شامل کریں",
+            calculateBtn: "تصفیہ کا حساب لگائیں",
+            resetBtn: "ری سیٹ",
+            printBtn: "پرنٹ",
+            fertilizer: "کھاد",
+            pesticides: "کیڑے مار ادویات",
+            seeds: "بیج",
+            labour: "مزدوری",
+            ploughing: "ہل چلائی",
+            other: "دیگر اخراجات",
+            resultsTitle: "کے لیے تصفیہ کا موازنہ",
+            businessTitle: "کاروباری اصولوں پر تصفیہ",
+            customaryTitle: "روایتی اصولوں پر تصفیہ",
+            totalSales: "کل فروخت",
+            deductedExpenses: "منہا شدہ اخراجات",
+            netProfit: "خالص منافع",
+            ownerShare: "مالک کا حصہ (50%)",
+            sharecropperShare: " کا حصہ (50%)",
+            ownerAdjustments: "مالک کی ایڈجسٹمنٹ",
+            sharecropperAdjustments: " کی ایڈجسٹمنٹ",
+            cashAdvance: "پیشگی رقم",
+            ownerFinalNet: "مالک کا حتمی بقایا",
+            sharecropperFinalNet: " کا حتمی بقایا",
+            note: "نوٹ:",
+            businessNote: "تمام اخراجات منافع کی تقسیم سے پہلے منہا کیے جاتے ہیں۔",
+            customaryNote: "منافع کی تقسیم سے پہلے صرف مشترکہ اخراجات منہا کیے جاتے ہیں۔"
         }
     };
 
     let currentLang = localStorage.getItem('appLang') || 'en';
-    const expenseKeys = ['fertilizer', 'pesticides', 'seeds', 'labour', 'ploughing', 'other'];
 
     function setLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('appLang', lang);
+
         document.documentElement.lang = lang;
         document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
-        document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = translations[lang][el.getAttribute('data-i18n')] || el.innerText);
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = translations[lang][el.getAttribute('data-i18n-placeholder')] || el.placeholder);
-        document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-lang') === lang));
-        document.querySelectorAll('.type-select').forEach(select => {
-            const selectedValue = select.value;
-            select.innerHTML = expenseKeys.map(key => `<option value="${key}">${translations[lang][key]}</option>`).join('');
-            select.value = selectedValue;
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            el.innerText = translations[lang][key];
         });
-        if (!resultsDiv.classList.contains('hidden')) calculateButton.click();
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            el.placeholder = translations[lang][key];
+        });
+
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+        });
+
+        document.querySelectorAll('.expense-row').forEach(row => {
+            row.querySelectorAll('option').forEach(option => {
+                option.innerText = translations[lang][option.value];
+            });
+        });
+
+        if (!resultsDiv.classList.contains('hidden')) {
+            calculateButton.click();
+        }
     }
+
+    const expenseKeys = ['fertilizer', 'pesticides', 'seeds', 'labour', 'ploughing', 'other'];
 
     function addExpenseRow(payer) {
         const container = document.getElementById(`${payer}ExpensesContainer`);
@@ -147,7 +229,7 @@
         row.className = 'expense-row grid grid-cols-12 gap-2 items-center';
         row.setAttribute('data-payer', payer);
         const options = expenseKeys.map(key => `<option value="${key}">${translations[currentLang][key]}</option>`).join('');
-        row.innerHTML = `<div class="col-span-5"><input type="number" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md amount-input" value="0"></div><div class="col-span-6"><select class="w-full p-2 border border-gray-300 rounded-md type-select">${options}</select></div><div class="col-span-1 text-right"><button type="button" class="remove-btn text-red-500 hover:text-red-700 opacity-25" onclick="this.closest('.expense-row').remove()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div>`;
+        row.innerHTML = `<div class="col-span-5"><input type="number" min="0" step="0.01" placeholder="Amount" class="w-full p-2 border border-gray-300 rounded-md amount-input" value="0"></div><div class="col-span-6"><select class="w-full p-2 border border-gray-300 rounded-md type-select">${options}</select></div><div class="col-span-1 text-right"><button type="button" class="remove-btn text-red-500 hover:text-red-700 opacity-25" onclick="this.parentElement.parentElement.remove()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div>`;
         container.appendChild(row);
     }
     
@@ -155,8 +237,13 @@
     const resetButton = document.getElementById('resetForm');
     const resultsDiv = document.getElementById('ledgerResult');
 
-    document.getElementById('lang-switcher').addEventListener('click', e => { if (e.target.matches('.lang-btn')) setLanguage(e.target.getAttribute('data-lang')); });
-    document.body.addEventListener('click', e => { if (e.target.id === 'printButton') window.print(); });
+    document.getElementById('lang-switcher').addEventListener('click', (e) => {
+        if (e.target.matches('.lang-btn')) {
+            setLanguage(e.target.getAttribute('data-lang'));
+        }
+    });
+
+    document.body.addEventListener('click', (event) => { if (event.target.id === 'printButton') window.print(); });
     resetButton.addEventListener('click', () => {
         document.getElementById('ledgerForm').reset();
         ['ownerExpensesContainer', 'sharecropperExpensesContainer'].forEach(id => document.getElementById(id).innerHTML = '');
@@ -169,124 +256,103 @@
         const sales = parseFloat(document.getElementById('salesAmount').value) || 0;
         const advance = parseFloat(document.getElementById('cashAdvance').value) || 0;
         
-        const expenses = Array.from(document.querySelectorAll('.expense-row')).map(row => ({
-            amount: parseFloat(row.querySelector('.amount-input').value) || 0,
-            type: row.querySelector('.type-select').value,
-            paidBy: row.getAttribute('data-payer')
-        }));
+        const expenses = [];
+        document.querySelectorAll('.expense-row').forEach(row => {
+            const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
+            if (amount > 0) expenses.push({ amount, type: row.querySelector('.type-select').value, paidBy: row.getAttribute('data-payer') === 'owner' ? 'Owner' : 'Sharecropper' });
+        });
 
-        const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
-        const inputsTotal = expenses.filter(e => ['fertilizer', 'pesticides', 'seeds'].includes(e.type)).reduce((s, e) => s + e.amount, 0);
-        const labourTotal = expenses.filter(e => e.type === 'labour').reduce((s, e) => s + e.amount, 0);
-        const ploughingTotal = expenses.filter(e => e.type === 'ploughing').reduce((s, e) => s + e.amount, 0);
-        const otherTotal = expenses.filter(e => e.type === 'other').reduce((s, e) => s + e.amount, 0);
+        const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const inputsTotal = expenses.filter(e => ['fertilizer', 'pesticides', 'seeds'].includes(e.type)).reduce((sum, exp) => sum + exp.amount, 0);
+        const labourTotal = expenses.filter(e => e.type === 'labour').reduce((sum, exp) => sum + exp.amount, 0);
+        const ploughingTotal = expenses.filter(e => e.type === 'ploughing').reduce((sum, exp) => sum + exp.amount, 0);
+        const otherTotal = expenses.filter(e => e.type === 'other').reduce((sum, exp) => sum + exp.amount, 0);
         
         const ownerObligation = (inputsTotal * 0.5) + otherTotal;
         const shareObligation = (inputsTotal * 0.5) + labourTotal + ploughingTotal;
-        const ownerPaid = expenses.filter(e => e.paidBy === 'owner').reduce((s, e) => s + e.amount, 0);
-        const sharePaid = expenses.filter(e => e.paidBy === 'sharecropper').reduce((s, e) => s + e.amount, 0);
+        const ownerPaid = expenses.filter(e => e.paidBy === 'Owner').reduce((sum, exp) => sum + exp.amount, 0);
+        const sharePaid = expenses.filter(e => e.paidBy === 'Sharecropper').reduce((sum, exp) => sum + exp.amount, 0);
         const ownerOverUnder = ownerPaid - ownerObligation;
         const shareOverUnder = sharePaid - shareObligation;
         
-        // --- Business Principles Calculation ---
         const businessProfit = sales - totalExpenses;
         const businessProfitEach = businessProfit / 2;
         const businessNetToOwner = businessProfitEach + ownerOverUnder + advance;
         const businessNetToShare = businessProfitEach + shareOverUnder - advance;
 
-        // --- Customary Principles Calculation (CORRECTED) ---
         const customaryDeductedExpenses = totalExpenses - labourTotal - ploughingTotal;
         const customaryProfit = sales - customaryDeductedExpenses;
         const customaryProfitEach = customaryProfit / 2;
-        
         const customaryNetToOwner = customaryProfitEach + ownerOverUnder + advance;
-        
-        // CORRECTED FORMULA: Start with the share of customary profit, then deduct sole responsibilities (Labour, Ploughing, Advance).
-        // This is the direct implementation of the user's provided formula and the correct customary logic.
-        const customaryNetToShare = customaryProfitEach - labourTotal - ploughingTotal - advance;
+        const customaryNetToShare = customaryProfitEach + shareOverUnder - advance;
 
-        renderResults({ name, sales, advance, business: { netToOwner: businessNetToOwner, netToShare: businessNetToShare }, customary: { netToOwner: customaryNetToOwner, netToShare: customaryNetToShare }, details: { totalExpenses, ownerPaid, sharePaid, ownerObligation, shareObligation, profit: businessProfit, profitShare: businessProfitEach, cProfit: customaryProfit, cProfitShare: customaryProfitEach, cDeducted: customaryDeductedExpenses } });
+        renderResults({
+            name, sales, advance,
+            business: { deductedExpenses: totalExpenses, profit: businessProfit, profitShare: businessProfitEach, netToOwner: businessNetToOwner, netToShare: businessNetToShare },
+            customary: { deductedExpenses: customaryDeductedExpenses, profit: customaryProfit, profitShare: customaryProfitEach, netToOwner: customaryNetToOwner, netToShare: customaryNetToShare },
+            adjustments: { ownerOverUnder, shareOverUnder }
+        });
 
         resultsDiv.classList.remove('hidden');
         resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     function renderResults(data) {
-        const { name, sales, advance, business, customary, details } = data;
+        const { name, sales, advance, business, customary, adjustments } = data;
         const T = translations[currentLang];
-        const money = val => `PKR ${Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-        const posClass = val => val >= 0 ? 'text-green-700' : 'text-red-700';
-
-        const summaryCard = (titleKey, values) => {
-            const isNegative = values.netToShare < 0;
-            const sharecropperNetKey = isNegative ? 'amountOwed' : 'sharecropperFinalNet';
-            const sharecropperName = isNegative ? '' : name;
-
+        const money = (val) => `PKR ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const getStatusClass = (val) => val >= 0 ? 'text-green-600' : 'text-red-600';
+        
+        const createBreakdownHTML = (titleKey, values) => {
+            const noteKey = titleKey === 'businessTitle' ? 'businessNote' : 'customaryNote';
             return `
-            <div class="bg-white rounded-lg shadow-md p-6 text-center border-t-4 border-indigo-500">
-                <h3 class="font-bold text-xl text-gray-800" data-i18n="${titleKey}">${T[titleKey]}</h3>
-                <div class="mt-6">
-                    <p class="text-base text-gray-600" data-i18n="ownerFinalNet">${T.ownerFinalNet}</p>
-                    <p class="text-3xl font-bold mono ${posClass(values.netToOwner)}">${money(values.netToOwner)}</p>
-                </div>
-                <div class="mt-6">
-                    <p class="text-base ${isNegative ? 'text-red-700' : 'text-gray-600'}" data-i18n="${sharecropperNetKey}">${sharecropperName}${T[sharecropperNetKey]}</p>
-                    <p class="text-3xl font-bold mono ${posClass(values.netToShare)}">${money(isNegative ? Math.abs(values.netToShare) : values.netToShare)}</p>
+            <div class="print-friendly bg-white p-5 rounded-lg shadow-sm border flex flex-col h-full text-left">
+                <h3 class="text-lg font-bold text-indigo-700 text-center">${T[titleKey]}</h3>
+                <dl class="space-y-2.5 mono text-sm flex-grow mt-4">
+                    <div class="flex justify-between items-center"><dt>${T.totalSales}</dt><dd class="font-semibold text-green-700">${money(sales)}</dd></div>
+                    <div class="flex justify-between items-center"><dt>${T.deductedExpenses}</dt><dd class="font-semibold text-red-700">- ${money(values.deductedExpenses)}</dd></div>
+                    <div class="flex justify-between items-center border-t pt-2 mt-2"><dt>${T.netProfit}</dt><dd class="font-bold ${getStatusClass(values.profit)}">${money(values.profit)}</dd></div>
+                    <div class="flex justify-between items-center"><dt>${T.ownerShare}</dt><dd>${money(values.profitShare)}</dd></div>
+                    <div class="flex justify-between items-center"><dt>${name}${T.sharecropperShare}</dt><dd>${money(values.profitShare)}</dd></div>
+                    <div class="border-t pt-2 mt-2">
+                        <div class="flex justify-between items-center"><dt>${T.ownerAdjustments}</dt><dd class="${getStatusClass(adjustments.ownerOverUnder)}">${money(adjustments.ownerOverUnder)}</dd></div>
+                        <div class="flex justify-between items-center"><dt>${name}${T.sharecropperAdjustments}</dt><dd class="${getStatusClass(adjustments.shareOverUnder)}">${money(adjustments.shareOverUnder)}</dd></div>
+                        <div class="flex justify-between items-center"><dt>${T.cashAdvance}</dt><dd>${money(advance)}</dd></div>
+                    </div>
+                    <div class="border-t pt-2 mt-2">
+                        <div class="flex justify-between items-center font-bold text-base"><dt>${T.ownerFinalNet}</dt><dd class="${getStatusClass(values.netToOwner)}">${money(values.netToOwner)}</dd></div>
+                        <div class="flex justify-between items-center font-bold text-base"><dt>${name}${T.sharecropperFinalNet}</dt><dd class="${getStatusClass(values.netToShare)}">${money(values.netToShare)}</dd></div>
+                    </div>
+                </dl>
+                <div class="mt-4 text-xs bg-gray-50 p-2 rounded border">
+                    <p class="font-semibold">${T.note}</p>
+                    <p class="text-gray-600">${T[noteKey]}</p>
                 </div>
             </div>`;
         };
-        
-        const detailCard = (titleKey, vals) => `
-            <div class="print-friendly bg-white p-6 rounded-lg shadow-md border flex flex-col h-full text-left">
-                <h3 class="text-xl font-bold text-indigo-700 text-center mb-4" data-i18n="${titleKey}">${T[titleKey]}</h3>
-                <div class="mb-4 bg-gray-50 p-3 rounded-md">
-                    <h4 class="font-semibold text-gray-700 text-sm border-b pb-2 mb-2" data-i18n="profitCalc">${T.profitCalc}</h4>
-                    <dl class="mono text-sm space-y-1.5">
-                        <div class="flex justify-between"><span>${T.totalSales}</span> <span class="font-medium text-gray-800">${money(sales)}</span></div>
-                        <div class="flex justify-between"><span>${T.deductedExpenses}</span> <span class="font-medium text-red-600">- ${money(vals.deducted)}</span></div>
-                        <div class="flex justify-between font-bold border-t pt-2 mt-1"><span>${T.netProfit}</span> <span class="${posClass(vals.profit)}">${money(vals.profit)}</span></div>
-                        <div class="flex justify-between pl-4 text-gray-600"><span>${T.ownerShare}</span> <span>${money(vals.profitShare)}</span></div>
-                        <div class="flex justify-between pl-4 text-gray-600"><span>${name}${T.sharecropperShare}</span> <span>${money(vals.profitShare)}</span></div>
-                    </dl>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-md">
-                    <h4 class="font-semibold text-gray-700 text-sm border-b pb-2 mb-2" data-i18n="expenseRecon">${T.expenseRecon}</h4>
-                     <dl class="mono text-sm space-y-1.5">
-                        <div class="flex justify-between"><dt>Owner Balance:</dt><dd class="font-medium ${posClass(details.ownerPaid - details.ownerObligation)}">${money(details.ownerPaid - details.ownerObligation)}</dd></div>
-                        <div class="flex justify-between"><dt>${name}'s Balance:</dt><dd class="font-medium ${posClass(details.sharePaid - details.shareObligation)}">${money(details.sharePaid - details.shareObligation)}</dd></div>
-                        <div class="flex justify-between"><dt>${T.cashAdvance}</dt><dd class="font-medium text-red-600">- ${money(advance)}</dd></div>
-                    </dl>
-                </div>
-                 <div class="mt-auto pt-4 text-sm">
-                    <p class="font-semibold" data-i18n="note">${T.note}</p>
-                    <p class="text-gray-700" data-i18n="${titleKey === 'businessTitle' ? 'businessNote' : 'customaryNote'}">${T[titleKey === 'businessTitle' ? 'businessNote' : 'customaryNote']}</p>
-                </div>
-            </div>`;
+        const titleText = (currentLang === 'en') ? `${T.resultsTitle} ${name}` : `${name} ${T.resultsTitle}`;
 
         resultsDiv.innerHTML = `
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800" data-i18n="resultsTitle">${T.resultsTitle} ${name}</h2>
+                <h2 class="text-2xl font-bold text-gray-800">${titleText}</h2>
                 <button id="printButton" class="no-print bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-900 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"></path></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-14a2 2 0 10-4 0 2 2 0 004 0z"></path></svg>
                     <span data-i18n="printBtn">${T.printBtn}</span>
                 </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                ${summaryCard('businessTitle', business)}
-                ${summaryCard('customaryTitle', customary)}
-            </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center" data-i18n="finalSettlement">${T.finalSettlement}</h3>
-            <div class="print-grid grid grid-cols-1 md:grid-cols-2 gap-6">
-                ${detailCard('businessTitle', { deducted: details.totalExpenses, profit: details.profit, profitShare: details.profitShare })}
-                ${detailCard('customaryTitle', { deducted: details.cDeducted, profit: details.cProfit, profitShare: details.cProfitShare })}
+            <div class="print-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
+                ${createBreakdownHTML('businessTitle', business)}
+                ${createBreakdownHTML('customaryTitle', customary)}
             </div>`;
     }
 
     // Initial page load
     document.addEventListener('DOMContentLoaded', () => {
         setLanguage(currentLang);
-        addExpenseRow('owner'); addExpenseRow('sharecropper');
+        addExpenseRow('owner'); 
+        addExpenseRow('sharecropper');
     });
+
   </script>
 </body>
 </html>
