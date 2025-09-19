@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -7,131 +7,166 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
     .mono { font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace; }
-    input:focus, select:focus {
-      outline: none;
-      box-shadow: 0 0 0 2px #4f46e5; /* Indigo-500 */
-      border-color: #6366f1;
-    }
-    .expense-row:hover .remove-btn {
-        opacity: 1;
-    }
-    
-    /* --- SPECIAL PRINT STYLES --- */
+    html[lang="ur"] body, html[lang="ur"] .urdu-font { font-family: 'Noto Naskh Arabic', 'Inter', sans-serif; }
+    input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px #4f46e5; border-color: #6366f1; }
+    .expense-row:hover .remove-btn { opacity: 1; }
+    .lang-btn.active { background-color: #4f46e5; color: white; font-weight: bold; }
+    html[dir="rtl"] .text-left { text-align: right; }
+    html[dir="rtl"] .text-right { text-align: left; }
     @media print {
-      body {
-        -webkit-print-color-adjust: exact; /* Ensures colors print in Chrome */
-        print-color-adjust: exact;
-      }
-      .no-print {
-        display: none !important;
-      }
-      #ledgerResult {
-        display: block !important;
-        box-shadow: none !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-      }
-      .print-grid {
-        display: block !important; /* Stack columns on print */
-      }
-      .print-friendly {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-        padding: 1rem !important;
-        background: #fff !important;
-        color: #000 !important;
-        page-break-inside: avoid;
-      }
-      h2, h3, dt, dd {
-          color: #000 !important;
-      }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .no-print { display: none !important; }
+      #ledgerResult { display: block !important; margin-top: 0 !important; }
+      .print-grid { display: block !important; }
+      .print-friendly { box-shadow: none !important; border: 1px solid #ddd !important; padding: 1rem !important; page-break-inside: avoid; }
     }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-100 text-gray-800">
 
   <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
-    <div class="text-center mb-8 no-print">
-        <h1 class="text-3xl font-bold text-green-800">Farm Ledger</h1>
-        <p class="text-lg text-gray-600">Consolidated Settlement Calculator</p>
+    <div class="text-center mb-4 no-print">
+        <h1 class="text-3xl font-bold text-green-800" data-i18n="mainTitle">Farm Ledger</h1>
+        <p class="text-lg text-gray-600" data-i18n="mainSubtitle">Consolidated Settlement Calculator</p>
     </div>
 
-    <div class="bg-blue-50 border border-blue-200 text-blue-800 p-5 rounded-lg mb-6 no-print">
-        <h2 class="font-bold text-lg">Welcome to the Farm Ledger</h2>
-        <p class="mt-2 text-sm">This tool calculates sharecropper settlements using two common methods. Simply enter the sales and expenses to see a side-by-side comparison of the "Formal Business" and "Customary Hari" practices.</p>
+    <div id="lang-switcher" class="text-center mb-6 no-print">
+        <div class="inline-flex rounded-md shadow-sm">
+            <button type="button" data-lang="en" class="lang-btn rounded-l-lg border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-900 hover:bg-gray-100">English</button>
+            <button type="button" data-lang="ur" class="lang-btn rounded-r-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-900 hover:bg-gray-100 urdu-font">اردو</button>
+        </div>
     </div>
-
+    
     <form id="ledgerForm" class="space-y-6 no-print">
-        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 space-y-4">
+        <div class="bg-white p-5 rounded-lg shadow border border-gray-200 space-y-4">
             <div>
-                <label for="sharecropperName" class="block text-sm font-medium text-gray-700">Sharecropper (Hari) Name</label>
-                <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" placeholder="e.g. Shahbaz" required>
+                <label for="sharecropperName" class="block text-sm font-medium text-gray-700" data-i18n="sharecropperNameLabel">Sharecropper (Hari) Name</label>
+                <input id="sharecropperName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" data-i18n-placeholder="sharecropperNamePlaceholder" placeholder="e.g. Shahbaz">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="salesAmount" class="block text-sm font-medium text-gray-700">Total Sales (PKR)</label>
+                    <label for="salesAmount" class="block text-sm font-medium text-gray-700" data-i18n="totalSalesLabel">Total Sales (PKR)</label>
                     <input id="salesAmount" type="number" min="0" step="0.01" class="mt-1 w-full p-2 border border-gray-300 rounded-md" value="0">
                 </div>
                 <div>
-                    <label for="cashAdvance" class="block text-sm font-medium text-gray-700">Cash Advance to Sharecropper (PKR)</label>
+                    <label for="cashAdvance" class="block text-sm font-medium text-gray-700" data-i18n="cashAdvanceLabel">Cash Advance to Sharecropper (PKR)</label>
                     <input id="cashAdvance" type="number" min="0" step="0.01" class="mt-1 w-full p-2 border border-gray-300 rounded-md" value="0">
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
-                <h2 class="text-base font-semibold text-gray-900 mb-4">Expenses Paid by Owner</h2>
+            <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+                <h2 class="text-base font-semibold text-gray-900 mb-4" data-i18n="ownerExpensesTitle">Expenses Paid by Owner</h2>
                 <div id="ownerExpensesContainer" class="space-y-3"></div>
-                <button type="button" onclick="addExpenseRow('owner')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">+ Add Expense</button>
+                <button type="button" onclick="addExpenseRow('owner')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800" data-i18n="addExpenseBtn">+ Add Expense</button>
             </div>
-            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
-                <h2 class="text-base font-semibold text-gray-900 mb-4">Expenses Paid by Sharecropper</h2>
+            <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+                <h2 class="text-base font-semibold text-gray-900 mb-4" data-i18n="sharecropperExpensesTitle">Expenses Paid by Sharecropper</h2>
                 <div id="sharecropperExpensesContainer" class="space-y-3"></div>
-                <button type="button" onclick="addExpenseRow('sharecropper')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">+ Add Expense</button>
+                <button type="button" onclick="addExpenseRow('sharecropper')" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800" data-i18n="addExpenseBtn">+ Add Expense</button>
             </div>
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3 pt-2">
-          <button type="button" id="calculateLedger" class="flex-1 bg-indigo-600 text-white font-semibold p-3 rounded-md hover:bg-indigo-700">
-            Calculate Settlements
-          </button>
-          <button type="button" id="resetForm" class="flex-1 bg-gray-200 text-gray-700 font-semibold p-3 rounded-md hover:bg-gray-300">
-            Reset
-          </button>
+          <button type="button" id="calculateLedger" class="flex-1 bg-indigo-600 text-white font-semibold p-3 rounded-md hover:bg-indigo-700" data-i18n="calculateBtn">Calculate Settlements</button>
+          <button type="button" id="resetForm" class="flex-1 bg-gray-200 text-gray-700 font-semibold p-3 rounded-md hover:bg-gray-300" data-i18n="resetBtn">Reset</button>
         </div>
       </form>
 
     <div id="ledgerResult" class="mt-10 hidden"></div>
-
   </div>
 
   <script>
-    const expenseTypes = ['Fertilizer', 'Pesticides', 'Seeds', 'Labour', 'Ploughing', 'Other'];
+    const translations = {
+        en: {
+            mainTitle: "Farm Ledger", mainSubtitle: "Consolidated Settlement Calculator", welcomeTitle: "Welcome to the Farm Ledger",
+            sharecropperNameLabel: "Sharecropper (Hari) Name", sharecropperNamePlaceholder: "e.g. Shahbaz", totalSalesLabel: "Total Sales (PKR)",
+            cashAdvanceLabel: "Cash Advance to Sharecropper (PKR)", ownerExpensesTitle: "Expenses Paid by Owner", sharecropperExpensesTitle: "Expenses Paid by Sharecropper",
+            addExpenseBtn: "+ Add Expense", calculateBtn: "Calculate Settlements", resetBtn: "Reset", printBtn: "Print",
+            fertilizer: "Fertilizer", pesticides: "Pesticides", seeds: "Seeds", labour: "Labour", ploughing: "Ploughing", other: "Other",
+            resultsTitle: "Settlement Comparison for", businessTitle: "Business Principles", customaryTitle: "Customary Principles",
+            ownerStatement: "Owner's Statement", sharecropperStatement: "'s Statement", yourShareOfProfit: "Your Share of Profit",
+            costSettlement: "Cost Settlement", costsResponsibleFor: "Costs you were responsible for", costsYouPaid: "Costs you already paid",
+            costBalance: "Balance of Costs", youAreOwed: "(You are owed this back)", willBeDeducted: "(This will be deducted)",
+            finalCalculation: "Final Calculation", cashAdvanceGiven: "Cash Advance Given (to be repaid)",
+            cashAdvanceTaken: "Cash Advance Taken (to be repaid)", finalPayout: "Final Payout", amountOwedByYou: "Amount Owed By You",
+            owner: "Owner", sharecropper: "Sharecropper",
+            ownerPercent: "Owner's %", sharecropperPercent: "'s %"
+        },
+        ur: {
+            mainTitle: "زرعی لیجر", mainSubtitle: "مشترکہ تصفیہ کیلکولیٹر", welcomeTitle: "زرعی لیجر میں خوش آمدید",
+            sharecropperNameLabel: "ہاری کا نام", sharecropperNamePlaceholder: "مثال کے طور پر شہباز", totalSalesLabel: "کل فروخت (PKR)",
+            cashAdvanceLabel: "ہاری کو پیشگی رقم (PKR)", ownerExpensesTitle: "مالک کے ادا کردہ اخراجات", sharecropperExpensesTitle: "ہاری کے ادا کردہ اخراجات",
+            addExpenseBtn: "+ خرچ شامل کریں", calculateBtn: "تصفیہ کا حساب لگائیں", resetBtn: "ری سیٹ", printBtn: "پرنٹ",
+            fertilizer: "کھاد", pesticides: "کیڑے مار ادویات", seeds: "بیج", labour: "مزدوری", ploughing: "ہل چلائی", other: "دیگر",
+            resultsTitle: "کے لیے تصفیہ کا موازنہ", businessTitle: "کاروباری اصول", customaryTitle: "روایتی اصول",
+            ownerStatement: "مالک کا گوشوارہ", sharecropperStatement: " کا گوشوارہ", yourShareOfProfit: "منافع میں آپ کا حصہ",
+            costSettlement: "اخراجات کا تصفیہ", costsResponsibleFor: "جن اخراجات کے آپ ذمہ دار تھے", costsYouPaid: "جو اخراجات آپ نے پہلے ہی ادا کیے",
+            costBalance: "اخراجات کا بقایا", youAreOwed: "(یہ رقم آپ کو واپس ملے گی)", willBeDeducted: "(یہ رقم منہا کی جائے گی)",
+            finalCalculation: "حتمی حساب", cashAdvanceGiven: "دی گئی پیشگی رقم (واجب الادا)",
+            cashAdvanceTaken: "لی گئی پیشگی رقم (واجب الادا)", finalPayout: "حتمی ادائیگی", amountOwedByYou: "آپ کے ذمہ واجب الادا رقم",
+            owner: "مالک", sharecropper: "ہاری",
+            ownerPercent: "مالک کا %", sharecropperPercent: " کا %"
+        }
+    };
+
+    let currentLang = localStorage.getItem('appLang') || 'en';
+    const expenseKeys = ['fertilizer', 'pesticides', 'seeds', 'labour', 'ploughing', 'other'];
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('appLang', lang);
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
+        document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = translations[lang][el.getAttribute('data-i18n')] || el.innerText);
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = translations[lang][el.getAttribute('data-i18n-placeholder')] || el.placeholder);
+        document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-lang') === lang));
+        document.querySelectorAll('.type-select').forEach(select => {
+            const selectedValue = select.value;
+            select.innerHTML = expenseKeys.map(key => `<option value="${key}">${translations[lang][key]}</option>`).join('');
+            select.value = selectedValue;
+        });
+        if (!resultsDiv.classList.contains('hidden')) calculateButton.click();
+    }
 
     function addExpenseRow(payer) {
         const container = document.getElementById(`${payer}ExpensesContainer`);
         const row = document.createElement('div');
-        row.className = 'expense-row grid grid-cols-12 gap-2 items-center';
-        row.setAttribute('data-payer', payer);
-        const options = expenseTypes.map(type => `<option value="${type}">${type}</option>`).join('');
-        row.innerHTML = `<div class="col-span-5"><input type="number" min="0" step="0.01" placeholder="Amount" class="w-full p-2 border border-gray-300 rounded-md amount-input" value="0"></div><div class="col-span-6"><select class="w-full p-2 border border-gray-300 rounded-md type-select">${options}</select></div><div class="col-span-1 text-right"><button type="button" class="remove-btn text-red-500 hover:text-red-700 opacity-25" onclick="this.parentElement.parentElement.remove()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div>`;
+        row.className = 'expense-row space-y-2';
+        const options = expenseKeys.map(key => `<option value="${key}">${translations[currentLang][key]}</option>`).join('');
+        row.innerHTML = `
+            <div class="grid grid-cols-12 gap-2 items-center">
+                <div class="col-span-5"><input type="number" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md amount-input" value="0"></div>
+                <div class="col-span-6"><select class="w-full p-2 border border-gray-300 rounded-md type-select">${options}</select></div>
+                <div class="col-span-1 text-right"><button type="button" class="remove-btn text-red-500 hover:text-red-700 opacity-25" onclick="this.closest('.expense-row').remove()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div>
+            </div>
+            <div class="other-percent-share hidden pl-1 grid grid-cols-2 gap-2">
+                <div><label class="text-xs text-gray-500">${translations[currentLang].ownerPercent}</label><input type="number" min="0" max="100" value="50" class="w-full p-1 border border-gray-300 rounded-md text-sm other-owner-percent"></div>
+                <div><label class="text-xs text-gray-500">${translations[currentLang].sharecropper}${translations[currentLang].sharecropperPercent}</label><input type="number" min="0" max="100" value="50" class="w-full p-1 border border-gray-300 rounded-md text-sm other-share-percent"></div>
+            </div>`;
         container.appendChild(row);
+
+        const typeSelect = row.querySelector('.type-select');
+        const percentShareDiv = row.querySelector('.other-percent-share');
+        typeSelect.addEventListener('change', () => percentShareDiv.classList.toggle('hidden', typeSelect.value !== 'other'));
+        
+        const ownerPercentInput = row.querySelector('.other-owner-percent');
+        const sharePercentInput = row.querySelector('.other-share-percent');
+        ownerPercentInput.addEventListener('input', () => sharePercentInput.value = 100 - ownerPercentInput.value);
+        sharePercentInput.addEventListener('input', () => ownerPercentInput.value = 100 - sharePercentInput.value);
     }
     
-    window.onload = () => { addExpenseRow('owner'); addExpenseRow('sharecropper'); };
-
     const calculateButton = document.getElementById('calculateLedger');
     const resetButton = document.getElementById('resetForm');
     const resultsDiv = document.getElementById('ledgerResult');
 
-    document.body.addEventListener('click', (event) => { if (event.target && event.target.id === 'printButton') window.print(); });
+    document.getElementById('lang-switcher').addEventListener('click', e => { if (e.target.matches('.lang-btn')) setLanguage(e.target.getAttribute('data-lang')); });
+    document.body.addEventListener('click', e => { if (e.target.id === 'printButton') window.print(); });
     resetButton.addEventListener('click', () => {
         document.getElementById('ledgerForm').reset();
         ['ownerExpensesContainer', 'sharecropperExpensesContainer'].forEach(id => document.getElementById(id).innerHTML = '');
@@ -144,56 +179,53 @@
         const sales = parseFloat(document.getElementById('salesAmount').value) || 0;
         const advance = parseFloat(document.getElementById('cashAdvance').value) || 0;
         
-        const expenses = [];
-        document.querySelectorAll('.expense-row').forEach(row => {
-            const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
-            if (amount > 0) expenses.push({ amount, type: row.querySelector('.type-select').value, paidBy: row.getAttribute('data-payer') === 'owner' ? 'Owner' : 'Sharecropper' });
-        });
+        const expenses = Array.from(document.querySelectorAll('.expense-row')).map(row => ({
+            amount: parseFloat(row.querySelector('.amount-input').value) || 0,
+            type: row.querySelector('.type-select').value,
+            paidBy: row.getAttribute('data-payer'),
+            split: {
+                owner: parseFloat(row.querySelector('.other-owner-percent').value) || 0,
+                share: parseFloat(row.querySelector('.other-share-percent').value) || 0
+            }
+        }));
 
-        const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-        const inputsTotal = expenses.filter(e => ['Fertilizer', 'Pesticides', 'Seeds'].includes(e.type)).reduce((sum, exp) => sum + exp.amount, 0);
-        const labourTotal = expenses.filter(e => e.type === 'Labour').reduce((sum, exp) => sum + exp.amount, 0);
-        const ploughingTotal = expenses.filter(e => e.type === 'Ploughing').reduce((sum, exp) => sum + exp.amount, 0);
-        const otherTotal = expenses.filter(e => e.type === 'Other').reduce((sum, exp) => sum + exp.amount, 0);
+        const inputsTotal = expenses.filter(e => ['fertilizer', 'pesticides', 'seeds'].includes(e.type)).reduce((s, e) => s + e.amount, 0);
+        const labourTotal = expenses.filter(e => e.type === 'labour').reduce((s, e) => s + e.amount, 0);
+        const ploughingTotal = expenses.filter(e => e.type === 'ploughing').reduce((s, e) => s + e.amount, 0);
         
-        // --- SHARED RECONCILIATION LOGIC ---
-        const ownerObligation = (inputsTotal * 0.5) + otherTotal;
-        const shareObligation = (inputsTotal * 0.5) + labourTotal + ploughingTotal;
-        const ownerPaid = expenses.filter(e => e.paidBy === 'Owner').reduce((sum, exp) => sum + exp.amount, 0);
-        const sharePaid = expenses.filter(e => e.paidBy === 'Sharecropper').reduce((sum, exp) => sum + exp.amount, 0);
+        let ownerObligation = inputsTotal * 0.5;
+        let shareObligation = (inputsTotal * 0.5) + labourTotal + ploughingTotal;
+        let otherExpensesTotal = 0;
+
+        expenses.filter(e => e.type === 'other' && e.amount > 0).forEach(exp => {
+            otherExpensesTotal += exp.amount;
+            ownerObligation += exp.amount * (exp.split.owner / 100);
+            shareObligation += exp.amount * (exp.split.share / 100);
+        });
+        
+        const totalExpenses = inputsTotal + labourTotal + ploughingTotal + otherExpensesTotal;
+        const ownerPaid = expenses.filter(e => e.paidBy === 'owner').reduce((s, e) => s + e.amount, 0);
+        const sharePaid = expenses.filter(e => e.paidBy === 'sharecropper').reduce((s, e) => s + e.amount, 0);
         const ownerOverUnder = ownerPaid - ownerObligation;
         const shareOverUnder = sharePaid - shareObligation;
         
-        // --- 1. BUSINESS PRINCIPLES CALCULATION ---
+        // Business Model
         const businessProfit = sales - totalExpenses;
         const businessProfitEach = businessProfit / 2;
         const businessNetToOwner = businessProfitEach + ownerOverUnder + advance;
         const businessNetToShare = businessProfitEach + shareOverUnder - advance;
 
-        // --- 2. CUSTOMARY PRINCIPLES CALCULATION ---
-        const customaryDeductedExpenses = totalExpenses - labourTotal - ploughingTotal;
+        // Customary Model
+        const customaryDeductedExpenses = inputsTotal + otherExpensesTotal;
         const customaryProfit = sales - customaryDeductedExpenses;
         const customaryProfitEach = customaryProfit / 2;
         const customaryNetToOwner = customaryProfitEach + ownerOverUnder + advance;
-        const customaryNetToShare = customaryProfitEach + shareOverUnder - advance;
+        const customaryNetToShare = customaryProfitEach - (shareObligation - (inputsTotal * 0.5)) + sharePaid - advance;
 
         renderResults({
-            name, sales, advance,
-            business: {
-                deductedExpenses: totalExpenses,
-                profit: businessProfit,
-                profitShare: businessProfitEach,
-                netToOwner: businessNetToOwner,
-                netToShare: businessNetToShare
-            },
-            customary: {
-                deductedExpenses: customaryDeductedExpenses,
-                profit: customaryProfit,
-                profitShare: customaryProfitEach,
-                netToOwner: customaryNetToOwner,
-                netToShare: customaryNetToShare
-            },
-            adjustments: { ownerOverUnder, shareOverUnder }
+            name, sales, advance, ownerPaid, sharePaid, ownerObligation, shareObligation, ownerOverUnder, shareOverUnder,
+            business: { profitShare: businessProfitEach, netOwner: businessNetToOwner, netShare: businessNetToShare },
+            customary: { profitShare: customaryProfitEach, netOwner: customaryNetToOwner, netShare: customaryNetToShare }
         });
 
         resultsDiv.classList.remove('hidden');
@@ -201,52 +233,87 @@
     });
 
     function renderResults(data) {
-        const { name, sales, advance, business, customary, adjustments } = data;
-        const money = (val) => `PKR ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        const getStatusClass = (val) => val >= 0 ? 'text-green-600' : 'text-red-600';
+        const T = translations[currentLang];
+        const money = val => `PKR ${Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        const posClass = val => val >= 0 ? 'text-green-700' : 'text-red-700';
         
-        const createBreakdownHTML = (title, values) => `
-            <div class="print-friendly bg-white p-5 rounded-lg shadow-sm border flex flex-col h-full">
-                <h3 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-3">${title}</h3>
-                <dl class="space-y-1.5 mono text-sm flex-grow">
-                    <div class="flex justify-between"><dt>Total Sales:</dt><dd class="font-semibold text-green-700">${money(sales)}</dd></div>
-                    <div class="flex justify-between"><dt>Deducted Expenses:</dt><dd class="font-semibold text-red-700">- ${money(values.deductedExpenses)}</dd></div>
-                    <div class="flex justify-between border-t pt-2 mt-2"><dt>Net Profit:</dt><dd class="font-bold ${getStatusClass(values.profit)}">${money(values.profit)}</dd></div>
-                    <div class="flex justify-between"><dt>Owner's Share (50%):</dt><dd>${money(values.profitShare)}</dd></div>
-                    <div class="flex justify-between"><dt>${name}'s Share (50%):</dt><dd>${money(values.profitShare)}</dd></div>
-                    
-                    <div class="border-t pt-2 mt-2">
-                        <div class="flex justify-between"><dt>Owner Adjustments:</dt><dd class="${getStatusClass(adjustments.ownerOverUnder)}">${money(adjustments.ownerOverUnder)}</dd></div>
-                        <div class="flex justify-between"><dt>${name} Adjustments:</dt><dd class="${getStatusClass(adjustments.shareOverUnder)}">${money(adjustments.shareOverUnder)}</dd></div>
-                        <div class="flex justify-between"><dt>Cash Advance:</dt><dd>${money(advance)}</dd></div>
+        const createDetailCard = (person, name, values) => {
+            const isOwner = person === 'owner';
+            const net = isOwner ? values.netOwner : values.netShare;
+            const overUnder = isOwner ? data.ownerOverUnder : data.shareOverUnder;
+            const obligation = isOwner ? data.ownerObligation : data.shareObligation;
+            const paid = isOwner ? data.ownerPaid : data.sharePaid;
+            const isOwed = overUnder >= 0;
+            const isFinalNegative = net < 0;
+
+            let advanceHTML = '';
+            if (data.advance > 0) {
+                if (isOwner) {
+                    advanceHTML = `<div class="flex justify-between text-green-700"><span class="font-semibold">${T.cashAdvanceGiven}</span><span>+ ${money(data.advance)}</span></div>`;
+                } else {
+                    advanceHTML = `<div class="flex justify-between text-red-700"><span class="font-semibold">${T.cashAdvanceTaken}</span><span>- ${money(data.advance)}</span></div>`;
+                }
+            }
+
+            return `
+            <div class="print-friendly bg-white p-5 rounded-lg shadow-md border flex flex-col h-full text-left">
+                <h3 class="font-bold text-lg text-gray-800">${isOwner ? T.ownerStatement : name + T.sharecropperStatement}</h3>
+                <div class="mt-4 space-y-4 text-sm mono">
+                    <div class="bg-green-50 p-3 rounded-md">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-green-800">${T.yourShareOfProfit}</span>
+                            <span class="font-bold text-lg text-green-800">${money(values.profitShare)}</span>
+                        </div>
                     </div>
-                    
-                    <div class="border-t pt-2 mt-2">
-                        <div class="flex justify-between font-bold text-base"><dt>Owner Final Net:</dt><dd class="${getStatusClass(values.netToOwner)}">${money(values.netToOwner)}</dd></div>
-                        <div class="flex justify-between font-bold text-base"><dt>${name} Final Net:</dt><dd class="${getStatusClass(values.netToShare)}">${money(values.netToShare)}</dd></div>
+                    <div class="bg-gray-50 p-3 rounded-md">
+                        <h4 class="font-semibold text-gray-700 text-xs border-b pb-1 mb-2">${T.costSettlement}</h4>
+                        <dl class="space-y-1.5 text-xs">
+                            <div class="flex justify-between"><span>${T.costsResponsibleFor}</span><span class="font-medium text-red-600">- ${money(obligation)}</span></div>
+                            <div class="flex justify-between"><span>${T.costsYouPaid}</span><span class="font-medium text-green-600">+ ${money(paid)}</span></div>
+                            <div class="flex justify-between font-bold border-t pt-1 mt-1">
+                                <span>${T.costBalance} <span class="text-gray-500 text-xs font-normal">${isOwed ? T.youAreOwed : T.willBeDeducted}</span></span>
+                                <span class="${posClass(overUnder)}">${money(overUnder)}</span>
+                            </div>
+                        </dl>
                     </div>
-                </dl>
-                <div class="mt-4 text-xs bg-gray-50 p-2 rounded border">
-                    <p class="font-semibold">Principle Used:</p>
-                    <p class="text-gray-600">${title === 'Business Principles Settlement' ? 'All expenses are deducted from sales before splitting the profit.' : 'Only shared expenses (Inputs, Other) are deducted before splitting profit. Labour/Ploughing are settled from the Sharecropper\'s final share.'}</p>
+                    <div class="bg-indigo-50 p-3 rounded-md">
+                        <h4 class="font-semibold text-indigo-800 text-xs border-b border-indigo-200 pb-1 mb-2">${T.finalCalculation}</h4>
+                        <dl class="space-y-1 text-sm font-semibold">
+                            <div class="flex justify-between"><span>(${T.yourShareOfProfit})</span><span>${money(values.profitShare)}</span></div>
+                            <div class="flex justify-between ${posClass(overUnder)}"><span>(${T.costBalance})</span><span>${overUnder >= 0 ? '+' : '-'} ${money(Math.abs(overUnder))}</span></div>
+                            ${advanceHTML}
+                        </dl>
+                    </div>
+                     <div class="text-center pt-2">
+                        <p class="text-sm ${isFinalNegative ? 'text-red-700' : 'text-gray-600'} font-bold">${isFinalNegative ? T.amountOwedByYou : T.finalPayout}</p>
+                        <p class="text-3xl font-bold mono ${posClass(net)}">${money(isFinalNegative ? Math.abs(net) : net)}</p>
+                    </div>
                 </div>
-            </div>
-        `;
+            </div>`;
+        };
 
         resultsDiv.innerHTML = `
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Settlement Comparison for ${name}</h2>
+                <h2 class="text-3xl font-bold text-gray-800" data-i18n="resultsTitle">${T.resultsTitle} ${data.name}</h2>
                 <button id="printButton" class="no-print bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-900 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2..."></path></svg>
-                    Print
+                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"></path></svg>
+                    <span data-i18n="printBtn">${T.printBtn}</span>
                 </button>
             </div>
-            <div class="print-grid grid grid-cols-1 md:grid-cols-2 gap-6">
-                ${createBreakdownHTML('Business Principles Settlement', business)}
-                ${createBreakdownHTML('Customary Principles Settlement', customary)}
-            </div>
-        `;
+            <div class="print-grid grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold text-center text-indigo-700" data-i18n="businessTitle">${T.businessTitle}</h3>
+                    ${createDetailCard('owner', data.name, data.business)}
+                    ${createDetailCard('sharecropper', data.name, data.business)}
+                </div>
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold text-center text-indigo-700" data-i18n="customaryTitle">${T.customaryTitle}</h3>
+                    ${createDetailCard('owner', data.name, data.customary)}
+                    ${createDetailCard('sharecropper', data.name, data.customary)}
+                </div>
+            </div>`;
     }
+    document.addEventListener('DOMContentLoaded', () => { setLanguage(currentLang); addExpenseRow('owner'); addExpenseRow('sharecropper'); });
   </script>
 </body>
 </html>
