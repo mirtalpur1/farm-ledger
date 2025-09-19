@@ -55,7 +55,7 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
     <header>
       <div>
         <h1>Farm Ledger — Customary Settlement Calculator</h1>
-        <p class="lead">Rules applied: inputs split 50/50; sharecropper responsible for ploughing & labour; reimbursements only when the sharecropper paid an item; profit = (Sales − Shared inputs) ÷ 2. Final transfer shown after adjusting loans & reimbursements.</p>
+        <p class="lead">Rules applied: inputs split 50/50; sharecropper responsible for ploughing & labour; reimbursements only when the sharecropper paid an item; profit = (Sales − Shared inputs) ÷ 2.</p>
       </div>
     </header><div class="layout">
   <div>
@@ -173,9 +173,9 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
     <div class="card" style="margin-top:12px">
       <div class="section-title">Assumptions & notes</div>
       <ul class="small">
-        <li>Shared inputs = Fertilizer + Seed + Pesticide. Each party's obligation = 50% of that total (used when share paid inputs).</li>
+        <li>Shared inputs = Fertilizer + Seed + Pesticide. Each party's obligation = 50% of that total.</li>
         <li>Sharecropper is 100% responsible for Ploughing & Labour (his profit share is first used to cover this).</li>
-        <li>Reimbursements are applied when the sharecropper paid items (owner usually pays initially). Loans during cultivation are adjusted at the end.</li>
+        <li>Reimbursements are applied only when the sharecropper paid items. Loans during cultivation are adjusted at the end.</li>
         <li>Negative net profit indicates a loss.</li>
       </ul>
     </div>
@@ -202,27 +202,15 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
         </div>
 
         <div class="result">
-          <div class="muted">Sharecropper share after plough & labour</div>
+          <div class="muted">Sharecropper share after covering plough & labour</div>
           <div class="muted small">(his profit share minus remaining plough & labour he must cover)</div>
           <div class="big" id="shareAfterPlough">0</div>
         </div>
 
         <div class="result">
-          <div class="muted">Final settlement required between parties</div>
-          <div class="muted small">Positive = Sharecropper pays Owner. Negative = Owner pays Sharecropper.</div>
+          <div class="muted">Who pays whom and how much</div>
+          <div class="muted small" id="settlementNote">Positive = Sharecropper pays Owner. Negative = Owner pays Sharecropper.</div>
           <div class="big" id="settlement">0</div>
-        </div>
-
-        <div class="result">
-          <div class="muted">Final net — Farm Owner</div>
-          <div class="big" id="ownerNet">0</div>
-          <div class="small muted" id="ownerDetail"></div>
-        </div>
-
-        <div class="result">
-          <div class="muted">Final net — Sharecropper</div>
-          <div class="big" id="shareNet">0</div>
-          <div class="small muted" id="shareDetail"></div>
         </div>
 
         <div style="margin-top:10px">
@@ -275,7 +263,6 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
       const loan_share_to_owner = num('loan_share_to_owner')
 
       const sharedInputsTotal = fert_total + seed_total + pest_total
-      const eachInputObligation = sharedInputsTotal / 2
       const plough_total = owner_plough + share_plough
       const labour_total = owner_labour + share_labour
 
@@ -296,20 +283,20 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
       // Sharecropper's profit after using his profit share to cover plough & labour
       const shareAfterPlough = eachProfitShare - remainingPloughLabour
 
-      // Reimbursements: only reimburse share if he paid more than his input obligation (owner usually pays inputs initially)
-      // If share_input_paid > eachInputObligation -> owner owes share (reimburse to share)
-      const share_input_overpayment = Math.max(0, share_input_paid - eachInputObligation)
-      const owner_input_overpayment = Math.max(0, owner_input_paid - eachInputObligation)
-      // Following your instruction: reimburse only when share paid (so owner_input_overpayment is NOT automatically reimbursed)
+      // Reimbursements: only reimburse share if he paid more than his input obligation
+      const ownerShouldFert = fert_total/2
+      const ownerShouldSeed = seed_total/2
+      const ownerShouldPest = pest_total/2
+
+      const share_input_overpayment = Math.max(0, share_input_paid - (ownerShouldFert + ownerShouldSeed + ownerShouldPest)/1) // if share paid more than his total half of inputs
 
       // Loans: net loan that share owes owner (positive means share owes owner)
       const netLoans = loan_owner_to_share - loan_share_to_owner
 
       // Final transfer calculation (positive => Sharecropper pays Owner; negative => Owner pays Sharecropper)
-      // Start from shortage in share's profit after covering plough & labour
       let transfer = 0
       if (shareAfterPlough < 0){
-        transfer += Math.abs(shareAfterPlough) // share needs to pay this shortfall to owner
+        transfer += Math.abs(shareAfterPlough) // share shortfall after covering plough & labour
       }
 
       // If share overpaid shared inputs, owner must reimburse him (reduce transfer)
@@ -318,12 +305,7 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
       // Add net loans (owner lent to share increases amount share owes)
       transfer += netLoans
 
-      // Round small -0 to 0
       if (Math.abs(transfer) < 0.005) transfer = 0
-
-      // Final nets (informational): Owner net = his profit share + transfer (money coming from share) + reimbursements he owes to share (negative transfer)
-      const ownerNet = eachProfitShare + transfer - Math.max(0, (share_input_overpayment))
-      const shareNet = eachProfitShare - remainingPloughLabour - transfer + Math.max(0, (share_input_overpayment))
 
       // Display
       $('sharedInputs').innerText = fmt(sharedInputsTotal)
@@ -331,27 +313,22 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
       $('eachShare').innerText = fmt(eachProfitShare)
       $('shareAfterPlough').innerText = fmt(shareAfterPlough)
       $('settlement').innerText = fmt(transfer)
-      $('ownerNet').innerText = fmt(ownerNet)
-      $('shareNet').innerText = fmt(shareNet)
 
-      $('ownerDetail').innerText = `Paid during cultivation: ${fmt(owner_input_paid + owner_paid_ploughlabour)}. (Owner usually pays inputs initially).` 
-      $('shareDetail').innerText = `Paid during cultivation: ${fmt(share_input_paid + share_paid_ploughlabour)}.`
-
-      // Table
+      // Table values
       $('t_owner_fert').innerText = fmt(owner_fert)
       $('t_share_fert').innerText = fmt(share_fert)
-      $('t_should_owner_fert').innerText = fmt(eachInputObligation/1) // each category shown equally? keep as half of category shown below
-      $('t_should_share_fert').innerText = fmt(eachInputObligation/1)
+      $('t_should_owner_fert').innerText = fmt(ownerShouldFert)
+      $('t_should_share_fert').innerText = fmt(ownerShouldFert)
 
       $('t_owner_seed').innerText = fmt(owner_seed)
       $('t_share_seed').innerText = fmt(share_seed)
-      $('t_should_owner_seed').innerText = fmt(eachInputObligation/1)
-      $('t_should_share_seed').innerText = fmt(eachInputObligation/1)
+      $('t_should_owner_seed').innerText = fmt(ownerShouldSeed)
+      $('t_should_share_seed').innerText = fmt(ownerShouldSeed)
 
       $('t_owner_pest').innerText = fmt(owner_pest)
       $('t_share_pest').innerText = fmt(share_pest)
-      $('t_should_owner_pest').innerText = fmt(eachInputObligation/1)
-      $('t_should_share_pest').innerText = fmt(eachInputObligation/1)
+      $('t_should_owner_pest').innerText = fmt(ownerShouldPest)
+      $('t_should_share_pest').innerText = fmt(ownerShouldPest)
 
       $('t_owner_plough').innerText = fmt(owner_plough)
       $('t_share_plough').innerText = fmt(share_plough)
@@ -363,7 +340,7 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
       $('t_should_owner_labour').innerText = fmt(0)
       $('t_should_share_labour').innerText = fmt(labour_total)
 
-      // Friendly who owes
+      // Who pays whom friendly text
       let whoOwesText = 'No transfer needed'
       if (transfer > 0){
         whoOwesText = `Sharecropper should pay Owner: ${fmt(transfer)}`
@@ -371,17 +348,24 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
         whoOwesText = `Owner should pay Sharecropper: ${fmt(Math.abs(transfer))}`
       }
 
-      // Show a console explanation for debugging
-      console.log({sharedInputsTotal, profitPool, eachProfitShare, remainingPloughLabour, shareAfterPlough, share_input_overpayment, netLoans, transfer, ownerNet, shareNet})
-
-      // Put who owes into settlement element's aria-label too
+      // Add tooltip/aria
       $('settlement').setAttribute('title', whoOwesText)
+      // Also place the friendly text below the settlement number for clarity
+      $('settlement').insertAdjacentHTML('afterend', `<div class="small" style="margin-top:6px">${whoOwesText}</div>`)
+
+      console.log({sharedInputsTotal, profitPool, eachProfitShare, remainingPloughLabour, shareAfterPlough, share_input_overpayment, netLoans, transfer})
     }
 
-    $('calcBtn').addEventListener('click', calculate)
-    $('resetBtn').addEventListener('click', ()=>{document.querySelectorAll('input').forEach(i=>{ if(i.type==='number') i.value='0' ; if(i.type==='text') i.value=''}); calculate()})
+    $('calcBtn').addEventListener('click', function(){
+      // Clear previous friendly text (if any) before calculating to avoid duplicates
+      const extras = document.querySelectorAll('#settlement + .small')
+      extras.forEach(e=>e.remove())
+      calculate()
+    })
+    $('resetBtn').addEventListener('click', ()=>{document.querySelectorAll('input').forEach(i=>{ if(i.type==='number') i.value='0' ; if(i.type==='text') i.value=''}); const extras = document.querySelectorAll('#settlement + .small'); extras.forEach(e=>e.remove()); calculate()})
 
     // initial calc
     calculate()
-  </script></body>
+  </script>
+</body>
 </html>
