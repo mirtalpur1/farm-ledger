@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -7,47 +6,33 @@
   <title>Farm Ledger — Customary Settlement Calculator</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg-1:#071028; --bg-2:#07172b; --card:#0b1220; --muted:#94a3b8; --accent:#06b6d4; --glass:rgba(255,255,255,0.03);
-      --max-width:1160px;
-    }
+    :root{--bg-1:#071028; --bg-2:#07172b; --card:#0b1220; --muted:#94a3b8; --accent:#06b6d4; --glass:rgba(255,255,255,0.03); --max-width:1160px}
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,var(--bg-1) 0%,var(--bg-2) 100%);color:#e6eef6}.container{max-width:var(--max-width);margin:24px auto;padding:18px}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
-h1{margin:0;font-size:20px}
-p.lead{margin:4px 0 12px;color:var(--muted);font-size:14px}
-
-.layout{display:grid;grid-template-columns:1fr 420px;gap:20px}
-
-.card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-.section-title{font-weight:600;margin-bottom:8px}
-
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-input[type=number], input[type=text]{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;font-size:14px}
-
-.controls{display:flex;gap:8px;margin-top:12px}
-button{padding:10px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
-.btn-primary{background:var(--accent);color:#021426}
-.btn-ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04)}
-
-.result{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:12px;border-radius:8px;margin-bottom:12px}
-.muted{color:var(--muted);font-size:13px}
-.big{font-size:18px;font-weight:700}
-.small{font-size:12px;color:var(--muted)}
-
-table{width:100%;border-collapse:collapse;margin-top:8px}
-td,th{padding:8px;text-align:left;font-size:13px;border-bottom:1px dashed rgba(255,255,255,0.03)}
-
-footer{margin-top:18px;color:var(--muted);font-size:13px}
-
-/* Responsive */
-@media (max-width:980px){
-  .layout{grid-template-columns:1fr}
-  .container{padding:12px}
-}
-
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,var(--bg-1) 0%,var(--bg-2) 100%);color:#e6eef6}
+    .container{max-width:var(--max-width);margin:24px auto;padding:18px}
+    header{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:4px 0 12px;color:var(--muted);font-size:14px}
+    .layout{display:grid;grid-template-columns:1fr 440px;gap:20px}
+    .card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .section-title{font-weight:600;margin-bottom:8px}
+    .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=number], input[type=text]{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;font-size:14px}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    button{padding:10px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+    .btn-primary{background:var(--accent);color:#021426}
+    .btn-ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04)}
+    .result{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:12px;border-radius:8px;margin-bottom:12px}
+    .muted{color:var(--muted);font-size:13px}
+    .big{font-size:18px;font-weight:700}
+    .small{font-size:12px;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    td,th{padding:8px;text-align:left;font-size:13px;border-bottom:1px dashed rgba(255,255,255,0.03)}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    .checkbox-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+    @media (max-width:980px){.layout{grid-template-columns:1fr}.container{padding:12px}}
   </style>
 </head>
 <body>
@@ -55,218 +40,224 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
     <header>
       <div>
         <h1>Farm Ledger — Customary Settlement Calculator</h1>
-        <p class="lead">Rules applied: inputs split 50/50; sharecropper responsible for ploughing & labour; reimbursements only when the sharecropper paid an item; profit = (Sales − Shared inputs) ÷ 2.</p>
+        <p class="lead">Simplified data entry: owner usually pays all expenses. If your arrangement ("Seth/Bhaiwari") has the sharecropper paying part of costs, enable that option to enter share-paid amounts. Calculation rules remain unchanged.</p>
       </div>
-    </header><div class="layout">
-  <div>
-    <div class="card">
-      <div class="section-title">1) Summary</div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div style="flex:1">
-          <label>Total sales revenue (currency)</label>
-          <input id="sales" type="number" step="0.01" value="0">
+    </header>
+
+    <div class="layout">
+      <div>
+        <div class="card">
+          <div class="section-title">1) Summary</div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <div style="flex:1">
+              <label>Total sales revenue (currency)</label>
+              <input id="sales" type="number" step="0.01" value="0">
+            </div>
+            <div style="width:220px">
+              <label>Notes / Crop</label>
+              <input id="note" type="text" placeholder="e.g., Wheat 2025">
+            </div>
+          </div>
+
+          <hr style="border:none;margin:12px 0;height:1px;background:rgba(255,255,255,0.03)">
+
+          <div class="section-title">2) Totals (enter totals for the season)</div>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+            <div>
+              <label>Fertilizer total</label>
+              <input id="fert_total" type="number" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Seed total</label>
+              <input id="seed_total" type="number" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Pesticide total</label>
+              <input id="pest_total" type="number" step="0.01" value="0">
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top:10px">
+            <div>
+              <label>Ploughing total</label>
+              <input id="plough_total" type="number" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Labour total</label>
+              <input id="labour_total" type="number" step="0.01" value="0">
+            </div>
+          </div>
+
+          <div class="small" style="margin-top:8px">By default the owner is assumed to have paid these totals (prevalent system). Use the option below only if the sharecropper actually paid some amounts.</div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="sethChk"><label for="sethChk" class="small">Seth / Bhaiwari: Sharecropper paid some costs (show extra fields)</label>
+          </div>
+
+          <div id="sharePayments" style="display:none;margin-top:12px">
+            <div class="section-title">3) Amounts paid by Sharecropper (only when above option checked)</div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+              <div>
+                <label>Share paid — Fertilizer</label>
+                <input id="share_fert" type="number" step="0.01" value="0">
+              </div>
+              <div>
+                <label>Share paid — Seed</label>
+                <input id="share_seed" type="number" step="0.01" value="0">
+              </div>
+              <div>
+                <label>Share paid — Pesticide</label>
+                <input id="share_pest" type="number" step="0.01" value="0">
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-top:10px">
+              <div>
+                <label>Share paid — Ploughing</label>
+                <input id="share_plough" type="number" step="0.01" value="0">
+              </div>
+              <div>
+                <label>Share paid — Labour</label>
+                <input id="share_labour" type="number" step="0.01" value="0">
+              </div>
+            </div>
+          </div>
+
+          <hr style="border:none;margin:12px 0;height:1px;background:rgba(255,255,255,0.03)">
+
+          <div class="section-title">4) Cash loans during cultivation (optional)</div>
+          <div class="form-row">
+            <div>
+              <label>Loan from Owner → Sharecropper</label>
+              <input id="loan_owner_to_share" type="number" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Loan from Sharecropper → Owner</label>
+              <input id="loan_share_to_owner" type="number" step="0.01" value="0">
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="btn-primary" id="calcBtn">Calculate</button>
+            <button class="btn-ghost" id="resetBtn">Reset</button>
+          </div>
         </div>
-        <div style="width:220px">
-          <label>Notes / Crop</label>
-          <input id="note" type="text" placeholder="e.g., Wheat 2025">
+
+        <div class="card" style="margin-top:12px">
+          <div class="section-title">Assumptions & notes</div>
+          <ul class="small">
+            <li>Shared inputs = Fertilizer + Seed + Pesticide. Each party's obligation = 50% of that total.</li>
+            <li>Sharecropper is 100% responsible for Ploughing & Labour (his profit share is used to cover them first).</li>
+            <li>If sharecropper paid some costs (Seth/Bhaiwari), provide those amounts above. Owner-paid amounts are computed automatically as totals minus share-paid.</li>
+            <li>Calculator keeps your rules unchanged while simplifying data entry for the common case where owner pays all initially.</li>
+          </ul>
         </div>
       </div>
 
-      <hr style="border:none;margin:12px 0;height:1px;background:rgba(255,255,255,0.03)">
+      <div>
+        <div class="card">
+          <div class="section-title">Results</div>
 
-      <div class="section-title">2) Shared inputs (fertilizer, seed, pesticide) — totals</div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
-        <div>
-          <label>Fertilizer total</label>
-          <input id="fert_total" type="number" step="0.01" value="0">
-        </div>
-        <div>
-          <label>Seed total</label>
-          <input id="seed_total" type="number" step="0.01" value="0">
-        </div>
-        <div>
-          <label>Pesticide total</label>
-          <input id="pest_total" type="number" step="0.01" value="0">
-        </div>
-      </div>
+          <div id="resultsArea">
+            <div class="result">
+              <div class="muted">Shared inputs total</div>
+              <div class="big" id="sharedInputs">0</div>
+            </div>
 
-      <div class="small" style="margin-top:8px">Enter who actually paid amounts below. Reimbursements are applied only if the sharecropper paid for an item (owner usually pays initially).</div>
+            <div class="result">
+              <div class="muted">Profit pool (Sales − Shared inputs)</div>
+              <div class="big" id="profitPool">0</div>
+            </div>
 
-      <hr style="border:none;margin:12px 0;height:1px;background:rgba(255,255,255,0.03)">
+            <div class="result">
+              <div class="muted">Each party share of profit (profit pool ÷ 2)</div>
+              <div class="big" id="eachShare">0</div>
+            </div>
 
-      <div class="section-title">3) Payments made by Farm owner</div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
-        <div>
-          <label>Owner paid — Fertilizer</label>
-          <input id="owner_fert" type="number" step="0.01" value="0">
-        </div>
-        <div>
-          <label>Owner paid — Seed</label>
-          <input id="owner_seed" type="number" step="0.01" value="0">
-        </div>
-        <div>
-          <label>Owner paid — Pesticide</label>
-          <input id="owner_pest" type="number" step="0.01" value="0">
-        </div>
-      </div>
+            <div class="result">
+              <div class="muted">Sharecropper share after covering plough & labour</div>
+              <div class="muted small">(his profit share minus remaining plough & labour he must cover)</div>
+              <div class="big" id="shareAfterPlough">0</div>
+            </div>
 
-      <div class="form-row" style="margin-top:10px">
-        <div>
-          <label>Owner paid — Ploughing</label>
-          <input id="owner_plough" type="number" step="0.01" value="0">
-        </div>
-        <div>
-          <label>Owner paid — Labour</label>
-          <input id="owner_labour" type="number" step="0.01" value="0">
-        </div>
-      </div>
+            <div class="result">
+              <div class="muted">Who pays whom and how much</div>
+              <div class="muted small" id="settlementNote">Positive = Sharecropper pays Owner. Negative = Owner pays Sharecropper.</div>
+              <div class="big" id="settlement">0</div>
+            </div>
 
-      <hr style="border:none;margin:12px 0;height:1px;background:rgba(255,255,255,0.03)">
+            <div style="margin-top:10px">
+              <table>
+                <thead><tr><th>Item</th><th style="width:110px">Owner paid</th><th style="width:110px">Share paid</th><th style="width:120px">Should be paid by Owner</th><th style="width:120px">Should be paid by Share</th></tr></thead>
+                <tbody>
+                  <tr><td>Fertilizer</td><td id="t_owner_fert">0</td><td id="t_share_fert">0</td><td id="t_should_owner_fert">0</td><td id="t_should_share_fert">0</td></tr>
+                  <tr><td>Seed</td><td id="t_owner_seed">0</td><td id="t_share_seed">0</td><td id="t_should_owner_seed">0</td><td id="t_should_share_seed">0</td></tr>
+                  <tr><td>Pesticide</td><td id="t_owner_pest">0</td><td id="t_share_pest">0</td><td id="t_should_owner_pest">0</td><td id="t_should_share_pest">0</td></tr>
+                  <tr><td>Ploughing</td><td id="t_owner_plough">0</td><td id="t_share_plough">0</td><td id="t_should_owner_plough">0</td><td id="t_should_share_plough">0</td></tr>
+                  <tr><td>Labour</td><td id="t_owner_labour">0</td><td id="t_share_labour">0</td><td id="t_should_owner_labour">0</td><td id="t_should_share_labour">0</td></tr>
+                </tbody>
+              </table>
+            </div>
 
-      <div class="section-title">4) Payments made by Sharecropper</div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
-        <div>
-          <label>Share paid — Fertilizer</label>
-          <input id="share_fert" type="number" step="0.01" value="0">
+          </div>
         </div>
-        <div>
-          <label>Share paid — Seed</label>
-          <input id="share_seed" type="number" step="0.01" value="0">
-        </div>
-        <div>
-          <label>Share paid — Pesticide</label>
-          <input id="share_pest" type="number" step="0.01" value="0">
-        </div>
-      </div>
 
-      <div class="form-row" style="margin-top:10px">
-        <div>
-          <label>Share paid — Ploughing</label>
-          <input id="share_plough" type="number" step="0.01" value="0">
-        </div>
-        <div>
-          <label>Share paid — Labour</label>
-          <input id="share_labour" type="number" step="0.01" value="0">
-        </div>
-      </div>
-
-      <hr style="border:none;margin:12px 0;height:1px;background:rgba(255,255,255,0.03)">
-
-      <div class="section-title">5) Cash loans during cultivation (optional)</div>
-      <div class="form-row">
-        <div>
-          <label>Loan from Owner → Sharecropper</label>
-          <input id="loan_owner_to_share" type="number" step="0.01" value="0">
-        </div>
-        <div>
-          <label>Loan from Sharecropper → Owner</label>
-          <input id="loan_share_to_owner" type="number" step="0.01" value="0">
-        </div>
-      </div>
-
-      <div class="controls">
-        <button class="btn-primary" id="calcBtn">Calculate</button>
-        <button class="btn-ghost" id="resetBtn">Reset</button>
       </div>
     </div>
 
-    <div class="card" style="margin-top:12px">
-      <div class="section-title">Assumptions & notes</div>
-      <ul class="small">
-        <li>Shared inputs = Fertilizer + Seed + Pesticide. Each party's obligation = 50% of that total.</li>
-        <li>Sharecropper is 100% responsible for Ploughing & Labour (his profit share is first used to cover this).</li>
-        <li>Reimbursements are applied only when the sharecropper paid items. Loans during cultivation are adjusted at the end.</li>
-        <li>Negative net profit indicates a loss.</li>
-      </ul>
-    </div>
+    <footer>
+      <div class="small">Copy-paste this file as <strong>index.html</strong>. If you want CSV export, printable report or saving multiple seasons, tell me and I'll add it.</div>
+    </footer>
   </div>
 
-  <div>
-    <div class="card">
-      <div class="section-title">Results</div>
-
-      <div id="resultsArea">
-        <div class="result">
-          <div class="muted">Shared inputs total</div>
-          <div class="big" id="sharedInputs">0</div>
-        </div>
-
-        <div class="result">
-          <div class="muted">Profit pool (Sales − Shared inputs)</div>
-          <div class="big" id="profitPool">0</div>
-        </div>
-
-        <div class="result">
-          <div class="muted">Each party share of profit (profit pool ÷ 2)</div>
-          <div class="big" id="eachShare">0</div>
-        </div>
-
-        <div class="result">
-          <div class="muted">Sharecropper share after covering plough & labour</div>
-          <div class="muted small">(his profit share minus remaining plough & labour he must cover)</div>
-          <div class="big" id="shareAfterPlough">0</div>
-        </div>
-
-        <div class="result">
-          <div class="muted">Who pays whom and how much</div>
-          <div class="muted small" id="settlementNote">Positive = Sharecropper pays Owner. Negative = Owner pays Sharecropper.</div>
-          <div class="big" id="settlement">0</div>
-        </div>
-
-        <div style="margin-top:10px">
-          <table>
-            <thead><tr><th>Item</th><th style="width:110px">Owner paid</th><th style="width:110px">Share paid</th><th style="width:120px">Should be paid by Owner</th><th style="width:120px">Should be paid by Share</th></tr></thead>
-            <tbody>
-              <tr><td>Fertilizer</td><td id="t_owner_fert">0</td><td id="t_share_fert">0</td><td id="t_should_owner_fert">0</td><td id="t_should_share_fert">0</td></tr>
-              <tr><td>Seed</td><td id="t_owner_seed">0</td><td id="t_share_seed">0</td><td id="t_should_owner_seed">0</td><td id="t_should_share_seed">0</td></tr>
-              <tr><td>Pesticide</td><td id="t_owner_pest">0</td><td id="t_share_pest">0</td><td id="t_should_owner_pest">0</td><td id="t_should_share_pest">0</td></tr>
-              <tr><td>Ploughing</td><td id="t_owner_plough">0</td><td id="t_share_plough">0</td><td id="t_should_owner_plough">0</td><td id="t_should_share_plough">0</td></tr>
-              <tr><td>Labour</td><td id="t_owner_labour">0</td><td id="t_share_labour">0</td><td id="t_should_owner_labour">0</td><td id="t_should_share_labour">0</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<footer>
-  <div class="small">Copy-paste this file as <strong>index.html</strong>. If you want CSV export, printable report or saving multiple seasons, tell me and I'll add it.</div>
-</footer>
-
-  </div>  <script>
+  <script>
     function $(id){return document.getElementById(id)}
     function num(id){return parseFloat($(id).value || 0) || 0}
     function fmt(v){return (Math.round((v+Number.EPSILON)*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+    function toggleSeth(){
+      const visible = $('sethChk').checked
+      $('sharePayments').style.display = visible ? 'block' : 'none'
+      if(!visible){
+        // reset share-paid inputs to 0
+        ['share_fert','share_seed','share_pest','share_plough','share_labour'].forEach(id=>{ if($(id)) $(id).value = 0 })
+      }
+    }
+
+    $('sethChk').addEventListener('change', toggleSeth)
 
     function calculate(){
       const sales = num('sales')
       const fert_total = num('fert_total')
       const seed_total = num('seed_total')
       const pest_total = num('pest_total')
+      const plough_total = num('plough_total')
+      const labour_total = num('labour_total')
 
-      const owner_fert = num('owner_fert')
-      const owner_seed = num('owner_seed')
-      const owner_pest = num('owner_pest')
-      const owner_plough = num('owner_plough')
-      const owner_labour = num('owner_labour')
+      // Share-paid amounts only if seth checkbox is checked; otherwise share paid = 0 and owner paid = totals
+      const seth = $('sethChk').checked
+      let share_fert = 0, share_seed = 0, share_pest = 0, share_plough = 0, share_labour = 0
+      if(seth){
+        share_fert = Math.min(num('share_fert'), fert_total)
+        share_seed = Math.min(num('share_seed'), seed_total)
+        share_pest = Math.min(num('share_pest'), pest_total)
+        share_plough = Math.min(num('share_plough'), plough_total)
+        share_labour = Math.min(num('share_labour'), labour_total)
+      }
 
-      const share_fert = num('share_fert')
-      const share_seed = num('share_seed')
-      const share_pest = num('share_pest')
-      const share_plough = num('share_plough')
-      const share_labour = num('share_labour')
+      // Owner paid = totals - share_paid
+      const owner_fert = fert_total - share_fert
+      const owner_seed = seed_total - share_seed
+      const owner_pest = pest_total - share_pest
+      const owner_plough = plough_total - share_plough
+      const owner_labour = labour_total - share_labour
 
       const loan_owner_to_share = num('loan_owner_to_share')
       const loan_share_to_owner = num('loan_share_to_owner')
 
       const sharedInputsTotal = fert_total + seed_total + pest_total
-      const plough_total = owner_plough + share_plough
-      const labour_total = owner_labour + share_labour
+      const eachInputObligation = sharedInputsTotal / 2
 
-      // Who actually paid for input categories
       const owner_input_paid = owner_fert + owner_seed + owner_pest
       const share_input_paid = share_fert + share_seed + share_pest
 
@@ -284,11 +275,7 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
       const shareAfterPlough = eachProfitShare - remainingPloughLabour
 
       // Reimbursements: only reimburse share if he paid more than his input obligation
-      const ownerShouldFert = fert_total/2
-      const ownerShouldSeed = seed_total/2
-      const ownerShouldPest = pest_total/2
-
-      const share_input_overpayment = Math.max(0, share_input_paid - (ownerShouldFert + ownerShouldSeed + ownerShouldPest)/1) // if share paid more than his total half of inputs
+      const share_input_overpayment = Math.max(0, share_input_paid - eachInputObligation)
 
       // Loans: net loan that share owes owner (positive means share owes owner)
       const netLoans = loan_owner_to_share - loan_share_to_owner
@@ -307,28 +294,28 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
 
       if (Math.abs(transfer) < 0.005) transfer = 0
 
-      // Display
+      // Display summary results
       $('sharedInputs').innerText = fmt(sharedInputsTotal)
       $('profitPool').innerText = fmt(profitPool)
       $('eachShare').innerText = fmt(eachProfitShare)
       $('shareAfterPlough').innerText = fmt(shareAfterPlough)
       $('settlement').innerText = fmt(transfer)
 
-      // Table values
+      // Table: owner paid and share paid (owner = totals - share)
       $('t_owner_fert').innerText = fmt(owner_fert)
       $('t_share_fert').innerText = fmt(share_fert)
-      $('t_should_owner_fert').innerText = fmt(ownerShouldFert)
-      $('t_should_share_fert').innerText = fmt(ownerShouldFert)
+      $('t_should_owner_fert').innerText = fmt(eachInputObligation/1)
+      $('t_should_share_fert').innerText = fmt(eachInputObligation/1)
 
       $('t_owner_seed').innerText = fmt(owner_seed)
       $('t_share_seed').innerText = fmt(share_seed)
-      $('t_should_owner_seed').innerText = fmt(ownerShouldSeed)
-      $('t_should_share_seed').innerText = fmt(ownerShouldSeed)
+      $('t_should_owner_seed').innerText = fmt(eachInputObligation/1)
+      $('t_should_share_seed').innerText = fmt(eachInputObligation/1)
 
       $('t_owner_pest').innerText = fmt(owner_pest)
       $('t_share_pest').innerText = fmt(share_pest)
-      $('t_should_owner_pest').innerText = fmt(ownerShouldPest)
-      $('t_should_share_pest').innerText = fmt(ownerShouldPest)
+      $('t_should_owner_pest').innerText = fmt(eachInputObligation/1)
+      $('t_should_share_pest').innerText = fmt(eachInputObligation/1)
 
       $('t_owner_plough').innerText = fmt(owner_plough)
       $('t_share_plough').innerText = fmt(share_plough)
@@ -348,23 +335,27 @@ footer{margin-top:18px;color:var(--muted);font-size:13px}
         whoOwesText = `Owner should pay Sharecropper: ${fmt(Math.abs(transfer))}`
       }
 
-      // Add tooltip/aria
-      $('settlement').setAttribute('title', whoOwesText)
-      // Also place the friendly text below the settlement number for clarity
-      $('settlement').insertAdjacentHTML('afterend', `<div class="small" style="margin-top:6px">${whoOwesText}</div>`)
+      // Remove previous friendly text (if any) then insert new
+      const prev = document.querySelectorAll('#settlement + .small.dynamic')
+      prev.forEach(e=>e.remove())
+      $('settlement').insertAdjacentHTML('afterend', `<div class="small dynamic" style="margin-top:6px">${whoOwesText}</div>`)
 
       console.log({sharedInputsTotal, profitPool, eachProfitShare, remainingPloughLabour, shareAfterPlough, share_input_overpayment, netLoans, transfer})
     }
 
+    // Wire buttons
     $('calcBtn').addEventListener('click', function(){
-      // Clear previous friendly text (if any) before calculating to avoid duplicates
-      const extras = document.querySelectorAll('#settlement + .small')
-      extras.forEach(e=>e.remove())
       calculate()
     })
-    $('resetBtn').addEventListener('click', ()=>{document.querySelectorAll('input').forEach(i=>{ if(i.type==='number') i.value='0' ; if(i.type==='text') i.value=''}); const extras = document.querySelectorAll('#settlement + .small'); extras.forEach(e=>e.remove()); calculate()})
+    $('resetBtn').addEventListener('click', ()=>{
+      document.querySelectorAll('input').forEach(i=>{ if(i.type==='number') i.value='0' ; if(i.type==='text') i.value=''});
+      document.getElementById('sethChk').checked = false
+      toggleSeth()
+      calculate()
+    })
 
-    // initial calc
+    // Initial state
+    toggleSeth()
     calculate()
   </script>
 </body>
