@@ -188,7 +188,7 @@
 
             <div style="margin-top:10px">
               <table>
-                <thead><tr><th>Item</th><th style="width:110px">Owner paid</th><th style="width:110px">Share paid</th><th style="width:120px">Should be paid by Owner</th><th style="width:120px">Should be paid by Share</th></tr></thead>
+                <thead><tr><th>Item</th><th style="width:110px">Owner paid</th><th style="width:110px">Share paid</th><th style="width:140px">Should be paid by Owner</th><th style="width:140px">Should be paid by Share</th></tr></thead>
                 <tbody>
                   <tr><td>Fertilizer</td><td id="t_owner_fert">0</td><td id="t_share_fert">0</td><td id="t_should_owner_fert">0</td><td id="t_should_share_fert">0</td></tr>
                   <tr><td>Seed</td><td id="t_owner_seed">0</td><td id="t_share_seed">0</td><td id="t_should_owner_seed">0</td><td id="t_should_share_seed">0</td></tr>
@@ -206,7 +206,7 @@
     </div>
 
     <footer>
-    
+     
     </footer>
   </div>
 
@@ -294,6 +294,11 @@
 
       if (Math.abs(transfer) < 0.005) transfer = 0
 
+      // Per-item obligations (correct values)
+      const ownerShouldFert = fert_total / 2
+      const ownerShouldSeed = seed_total / 2
+      const ownerShouldPest = pest_total / 2
+
       // Display summary results
       $('sharedInputs').innerText = fmt(sharedInputsTotal)
       $('profitPool').innerText = fmt(profitPool)
@@ -304,18 +309,18 @@
       // Table: owner paid and share paid (owner = totals - share)
       $('t_owner_fert').innerText = fmt(owner_fert)
       $('t_share_fert').innerText = fmt(share_fert)
-      $('t_should_owner_fert').innerText = fmt(eachInputObligation/1)
-      $('t_should_share_fert').innerText = fmt(eachInputObligation/1)
+      $('t_should_owner_fert').innerText = fmt(ownerShouldFert)
+      $('t_should_share_fert').innerText = fmt(ownerShouldFert)
 
       $('t_owner_seed').innerText = fmt(owner_seed)
       $('t_share_seed').innerText = fmt(share_seed)
-      $('t_should_owner_seed').innerText = fmt(eachInputObligation/1)
-      $('t_should_share_seed').innerText = fmt(eachInputObligation/1)
+      $('t_should_owner_seed').innerText = fmt(ownerShouldSeed)
+      $('t_should_share_seed').innerText = fmt(ownerShouldSeed)
 
       $('t_owner_pest').innerText = fmt(owner_pest)
       $('t_share_pest').innerText = fmt(share_pest)
-      $('t_should_owner_pest').innerText = fmt(eachInputObligation/1)
-      $('t_should_share_pest').innerText = fmt(eachInputObligation/1)
+      $('t_should_owner_pest').innerText = fmt(ownerShouldPest)
+      $('t_should_share_pest').innerText = fmt(ownerShouldPest)
 
       $('t_owner_plough').innerText = fmt(owner_plough)
       $('t_share_plough').innerText = fmt(share_plough)
@@ -360,4 +365,3 @@
   </script>
 </body>
 </html>
-
