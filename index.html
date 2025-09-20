@@ -30,8 +30,13 @@
     .small{font-size:12px;color:var(--muted)}
     table{width:100%;border-collapse:collapse;margin-top:8px}
     td,th{padding:8px;text-align:left;font-size:13px;border-bottom:1px dashed rgba(255,255,255,0.03)}
+    th .hint{display:block;font-size:11px;color:var(--muted);margin-top:4px}
     footer{margin-top:18px;color:var(--muted);font-size:13px}
     .checkbox-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+    /* status */
+    .status-ok{color:#9ef6c4}
+    .status-warn{color:#ffd58f}
+    .status-danger{color:#ff9b9b}
     @media (max-width:980px){.layout{grid-template-columns:1fr}.container{padding:12px}}
   </style>
 </head>
@@ -188,7 +193,15 @@
 
             <div style="margin-top:10px">
               <table>
-                <thead><tr><th>Item</th><th style="width:110px">Owner paid</th><th style="width:110px">Share paid</th><th style="width:140px">Should be paid by Owner</th><th style="width:140px">Should be paid by Share</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th style="width:110px" title="Amount actually paid by the Farm Owner for this item">Owner paid<div class="hint">Amount owner paid (totals − share-paid)</div></th>
+                    <th style="width:110px" title="Amount actually paid by the Sharecropper for this item">Share paid<div class="hint">Amount sharecropper paid (only in Seth/Bhaiwari)</div></th>
+                    <th style="width:140px" title="What each party should have paid for this item, according to the customary rules">Should be paid by Owner<div class="hint">Owner obligation for this item</div></th>
+                    <th style="width:140px" title="What each party should have paid for this item, according to the customary rules">Should be paid by Share<div class="hint">Share obligation for this item</div></th>
+                  </tr>
+                </thead>
                 <tbody>
                   <tr><td>Fertilizer</td><td id="t_owner_fert">0</td><td id="t_share_fert">0</td><td id="t_should_owner_fert">0</td><td id="t_should_share_fert">0</td></tr>
                   <tr><td>Seed</td><td id="t_owner_seed">0</td><td id="t_share_seed">0</td><td id="t_should_owner_seed">0</td><td id="t_should_share_seed">0</td></tr>
@@ -226,6 +239,14 @@
 
     $('sethChk').addEventListener('change', toggleSeth)
 
+    function setStatusClass(el, diff){
+      // diff = paid - should (positive => overpaid/ok, negative => underpaid)
+      el.classList.remove('status-ok','status-warn','status-danger')
+      if (diff === 0){ el.classList.add('status-ok') }
+      else if (diff > 0){ el.classList.add('status-warn') }
+      else { el.classList.add('status-danger') }
+    }
+
     function calculate(){
       const sales = num('sales')
       const fert_total = num('fert_total')
@@ -258,6 +279,14 @@
       const sharedInputsTotal = fert_total + seed_total + pest_total
       const eachInputObligation = sharedInputsTotal / 2
 
+      // Per-item obligation values
+      const should_owner_fert = fert_total / 2
+      const should_owner_seed = seed_total / 2
+      const should_owner_pest = pest_total / 2
+      const should_share_fert = fert_total / 2
+      const should_share_seed = seed_total / 2
+      const should_share_pest = pest_total / 2
+
       const owner_input_paid = owner_fert + owner_seed + owner_pest
       const share_input_paid = share_fert + share_seed + share_pest
 
@@ -274,7 +303,7 @@
       // Sharecropper's profit after using his profit share to cover plough & labour
       const shareAfterPlough = eachProfitShare - remainingPloughLabour
 
-      // Reimbursements: only reimburse share if he paid more than his input obligation
+      // Reimbursements: only reimburse share if he paid more than his input obligation (total)
       const share_input_overpayment = Math.max(0, share_input_paid - eachInputObligation)
 
       // Loans: net loan that share owes owner (positive means share owes owner)
@@ -283,7 +312,9 @@
       // Final transfer calculation (positive => Sharecropper pays Owner; negative => Owner pays Sharecropper)
       let transfer = 0
       if (shareAfterPlough < 0){
-        transfer += Math.abs(shareAfterPlough) // share shortfall after covering plough & labour
+        transfer += Math.abs(shareAfterPlough) // share shortfall after covering plough & labour -> owes owner
+      } else if (shareAfterPlough > 0){
+        transfer -= Math.abs(shareAfterPlough) // owner should pay share the remaining surplus
       }
 
       // If share overpaid shared inputs, owner must reimburse him (reduce transfer)
@@ -294,11 +325,6 @@
 
       if (Math.abs(transfer) < 0.005) transfer = 0
 
-      // Per-item obligations (correct values)
-      const ownerShouldFert = fert_total / 2
-      const ownerShouldSeed = seed_total / 2
-      const ownerShouldPest = pest_total / 2
-
       // Display summary results
       $('sharedInputs').innerText = fmt(sharedInputsTotal)
       $('profitPool').innerText = fmt(profitPool)
@@ -307,30 +333,46 @@
       $('settlement').innerText = fmt(transfer)
 
       // Table: owner paid and share paid (owner = totals - share)
-      $('t_owner_fert').innerText = fmt(owner_fert)
-      $('t_share_fert').innerText = fmt(share_fert)
-      $('t_should_owner_fert').innerText = fmt(ownerShouldFert)
-      $('t_should_share_fert').innerText = fmt(ownerShouldFert)
+      const ownerFertEl = $('t_owner_fert'); ownerFertEl.innerText = fmt(owner_fert)
+      const shareFertEl = $('t_share_fert'); shareFertEl.innerText = fmt(share_fert)
+      const shouldOwnerFertEl = $('t_should_owner_fert'); shouldOwnerFertEl.innerText = fmt(should_owner_fert)
+      const shouldShareFertEl = $('t_should_share_fert'); shouldShareFertEl.innerText = fmt(should_share_fert)
 
-      $('t_owner_seed').innerText = fmt(owner_seed)
-      $('t_share_seed').innerText = fmt(share_seed)
-      $('t_should_owner_seed').innerText = fmt(ownerShouldSeed)
-      $('t_should_share_seed').innerText = fmt(ownerShouldSeed)
+      const ownerSeedEl = $('t_owner_seed'); ownerSeedEl.innerText = fmt(owner_seed)
+      const shareSeedEl = $('t_share_seed'); shareSeedEl.innerText = fmt(share_seed)
+      const shouldOwnerSeedEl = $('t_should_owner_seed'); shouldOwnerSeedEl.innerText = fmt(should_owner_seed)
+      const shouldShareSeedEl = $('t_should_share_seed'); shouldShareSeedEl.innerText = fmt(should_share_seed)
 
-      $('t_owner_pest').innerText = fmt(owner_pest)
-      $('t_share_pest').innerText = fmt(share_pest)
-      $('t_should_owner_pest').innerText = fmt(ownerShouldPest)
-      $('t_should_share_pest').innerText = fmt(ownerShouldPest)
+      const ownerPestEl = $('t_owner_pest'); ownerPestEl.innerText = fmt(owner_pest)
+      const sharePestEl = $('t_share_pest'); sharePestEl.innerText = fmt(share_pest)
+      const shouldOwnerPestEl = $('t_should_owner_pest'); shouldOwnerPestEl.innerText = fmt(should_owner_pest)
+      const shouldSharePestEl = $('t_should_share_pest'); shouldSharePestEl.innerText = fmt(should_share_pest)
 
-      $('t_owner_plough').innerText = fmt(owner_plough)
-      $('t_share_plough').innerText = fmt(share_plough)
-      $('t_should_owner_plough').innerText = fmt(0)
-      $('t_should_share_plough').innerText = fmt(plough_total)
+      const ownerPloughEl = $('t_owner_plough'); ownerPloughEl.innerText = fmt(owner_plough)
+      const sharePloughEl = $('t_share_plough'); sharePloughEl.innerText = fmt(share_plough)
+      const shouldOwnerPloughEl = $('t_should_owner_plough'); shouldOwnerPloughEl.innerText = fmt(0)
+      const shouldSharePloughEl = $('t_should_share_plough'); shouldSharePloughEl.innerText = fmt(plough_total)
 
-      $('t_owner_labour').innerText = fmt(owner_labour)
-      $('t_share_labour').innerText = fmt(share_labour)
-      $('t_should_owner_labour').innerText = fmt(0)
-      $('t_should_share_labour').innerText = fmt(labour_total)
+      const ownerLabourEl = $('t_owner_labour'); ownerLabourEl.innerText = fmt(owner_labour)
+      const shareLabourEl = $('t_share_labour'); shareLabourEl.innerText = fmt(share_labour)
+      const shouldOwnerLabourEl = $('t_should_owner_labour'); shouldOwnerLabourEl.innerText = fmt(0)
+      const shouldShareLabourEl = $('t_should_share_labour'); shouldShareLabourEl.innerText = fmt(labour_total)
+
+      // Set status class per item (paid - should)
+      setStatusClass(ownerFertEl, owner_fert - should_owner_fert)
+      setStatusClass(shareFertEl, share_fert - should_share_fert)
+
+      setStatusClass(ownerSeedEl, owner_seed - should_owner_seed)
+      setStatusClass(shareSeedEl, share_seed - should_share_seed)
+
+      setStatusClass(ownerPestEl, owner_pest - should_owner_pest)
+      setStatusClass(sharePestEl, share_pest - should_share_pest)
+
+      setStatusClass(ownerPloughEl, owner_plough - 0)
+      setStatusClass(sharePloughEl, share_plough - plough_total)
+
+      setStatusClass(ownerLabourEl, owner_labour - 0)
+      setStatusClass(shareLabourEl, share_labour - labour_total)
 
       // Who pays whom friendly text
       let whoOwesText = 'No transfer needed'
@@ -365,4 +407,3 @@
   </script>
 </body>
 </html>
-
