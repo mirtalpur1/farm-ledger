@@ -6,9 +6,6 @@
   <title>Farm Ledger — Customary Settlement Calculator</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* NEW DESIGN - LIGHT THEME 
-      Based on the beautification prompt.
-    */
     :root {
       --bg-main: #f7f9fc;
       --card-bg: #ffffff;
@@ -171,11 +168,18 @@
       font-size: 13px;
       color: var(--text-secondary);
     }
+    
+    .table-wrapper {
+      overflow-x: auto;
+      width: 100%;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
     }
 
     th {
@@ -186,6 +190,7 @@
       text-align: left;
       font-size: 14px;
       border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
     }
     td:not(:first-child), th:not(:first-child){
         text-align: right;
@@ -195,6 +200,10 @@
         background-color: #f8fafc;
     }
     
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
     tbody tr:nth-child(even){
         background-color: #f8fafc;
     }
@@ -214,7 +223,6 @@
       margin-top: 16px;
     }
 
-    /* status colors for table */
     .status-ok { color: #16a34a; }
     .status-warn { color: #f97316; }
     .status-danger { color: #dc2626; }
@@ -226,13 +234,37 @@
         background: var(--border-color);
     }
 
+    /* --- MOBILE RESPONSIVENESS --- */
     @media (max-width: 980px) {
       .layout {
         grid-template-columns: 1fr;
       }
+    }
+
+    @media (max-width: 768px) {
       .container {
         padding: 12px;
         margin: 16px auto;
+      }
+      h1 {
+        font-size: 20px;
+      }
+      p.lead {
+          font-size: 14px;
+      }
+      .card {
+          padding: 16px;
+      }
+      .form-grid, .form-row {
+        grid-template-columns: 1fr;
+      }
+      .summary-grid {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+      .summary-grid > div {
+        width: 100% !important;
       }
     }
   </style>
@@ -249,7 +281,7 @@
       <div>
         <div class="card">
           <div class="section-title">Summary</div>
-          <div style="display:flex; gap:16px; align-items:flex-end;">
+          <div class="summary-grid" style="display:flex; gap:16px; align-items:flex-end;">
             <div style="flex:1;">
               <label for="sales">Total sales revenue (currency)</label>
               <input id="sales" type="number" step="0.01" value="0">
@@ -376,24 +408,26 @@
             </div>
             
             <div class="section-title" style="margin-top: 24px;">Detailed Breakdown</div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th style="width:110px">Owner Paid</th>
-                  <th style="width:110px">Sharecropper Paid</th>
-                  <th style="width:110px">Owner's Share</th>
-                  <th style="width:110px">Cropper's Share</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Fertilizer</td><td id="t_owner_fert">0.00</td><td id="t_share_fert">0.00</td><td id="t_should_owner_fert">0.00</td><td id="t_should_share_fert">0.00</td></tr>
-                <tr><td>Seed</td><td id="t_owner_seed">0.00</td><td id="t_share_seed">0.00</td><td id="t_should_owner_seed">0.00</td><td id="t_should_share_seed">0.00</td></tr>
-                <tr><td>Pesticide</td><td id="t_owner_pest">0.00</td><td id="t_share_pest">0.00</td><td id="t_should_owner_pest">0.00</td><td id="t_should_share_pest">0.00</td></tr>
-                <tr><td>Ploughing</td><td id="t_owner_plough">0.00</td><td id="t_share_plough">0.00</td><td id="t_should_owner_plough">0.00</td><td id="t_should_share_plough">0.00</td></tr>
-                <tr><td>Labour</td><td id="t_owner_labour">0.00</td><td id="t_share_labour">0.00</td><td id="t_should_owner_labour">0.00</td><td id="t_should_share_labour">0.00</td></tr>
-              </tbody>
-            </table>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th style="width:110px">Owner Paid</th>
+                    <th style="width:110px">Sharecropper Paid</th>
+                    <th style="width:110px">Owner's Share</th>
+                    <th style="width:110px">Cropper's Share</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Fertilizer</td><td id="t_owner_fert">0.00</td><td id="t_share_fert">0.00</td><td id="t_should_owner_fert">0.00</td><td id="t_should_share_fert">0.00</td></tr>
+                  <tr><td>Seed</td><td id="t_owner_seed">0.00</td><td id="t_share_seed">0.00</td><td id="t_should_owner_seed">0.00</td><td id="t_should_share_seed">0.00</td></tr>
+                  <tr><td>Pesticide</td><td id="t_owner_pest">0.00</td><td id="t_share_pest">0.00</td><td id="t_should_owner_pest">0.00</td><td id="t_should_share_pest">0.00</td></tr>
+                  <tr><td>Ploughing</td><td id="t_owner_plough">0.00</td><td id="t_share_plough">0.00</td><td id="t_should_owner_plough">0.00</td><td id="t_should_share_plough">0.00</td></tr>
+                  <tr><td>Labour</td><td id="t_owner_labour">0.00</td><td id="t_share_labour">0.00</td><td id="t_should_owner_labour">0.00</td><td id="t_should_share_labour">0.00</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -401,7 +435,7 @@
   </div>
 
   <script>
-    // JS logic remains unchanged as it's not part of the beautification.
+    // JS logic remains unchanged.
     function $(id){return document.getElementById(id)}
     function num(id){return parseFloat($(id).value || 0) || 0}
     function fmt(v){return (Math.round((v+Number.EPSILON)*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -419,8 +453,8 @@
     function setStatusClass(el, diff){
       el.classList.remove('status-ok','status-warn','status-danger')
       if (Math.abs(diff) < 0.01){ el.classList.add('status-ok') }
-      else if (diff > 0){ el.classList.add('status-warn') } // Overpaid their share
-      else { el.classList.add('status-danger') } // Underpaid their share
+      else if (diff > 0){ el.classList.add('status-warn') }
+      else { el.classList.add('status-danger') }
     }
 
     function calculate(){
@@ -519,7 +553,6 @@
       const shouldOwnerLabourEl = $('t_should_owner_labour'); shouldOwnerLabourEl.innerText = fmt(0)
       const shouldShareLabourEl = $('t_should_share_labour'); shouldShareLabourEl.innerText = fmt(labour_total)
 
-      // Set status class per item (paid - should)
       setStatusClass(ownerFertEl, owner_fert - should_owner_fert)
       setStatusClass(shareFertEl, share_fert - should_share_fert)
       setStatusClass(ownerSeedEl, owner_seed - should_owner_seed)
@@ -545,3 +578,5 @@
   </script>
 </body>
 </html>
+
+
