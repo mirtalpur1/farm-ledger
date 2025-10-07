@@ -1,582 +1,291 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Farm Ledger — Customary Settlement Calculator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farm Ledger Settlement Calculator</title>
   <style>
-    :root {
-      --bg-main: #f7f9fc;
-      --card-bg: #ffffff;
-      --text-primary: #334155;
-      --text-secondary: #64748b;
-      --border-color: #e2e8f0;
-      --accent-color: #28a745; /* Earthy Green */
-      --accent-color-dark: #218838;
-      --max-width: 1160px;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+    /* Reset & Base */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+      background-color: #f9f9f9;
+      color: #333;
+      padding: 20px;
     }
-    
-    * { 
-      box-sizing: border-box; 
-    }
-
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-primary);
-    }
-
-    .container {
-      max-width: var(--max-width);
-      margin: 32px auto;
-      padding: 18px;
-    }
-
-    header {
+    h1 {
+      text-align: center;
       margin-bottom: 24px;
     }
-
-    h1 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 600;
-    }
-
-    p.lead {
-      margin: 4px 0 12px;
-      color: var(--text-secondary);
-      font-size: 15px;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 460px;
-      gap: 24px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
       padding: 24px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-
-    .section-title {
-      font-weight: 600;
-      font-size: 18px;
+    .form-group {
       margin-bottom: 16px;
     }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    label {
+    .form-group label {
       display: block;
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-      font-weight: 500;
+      margin-bottom: 6px;
+      font-weight: bold;
     }
-
-    input[type=number], input[type=text] {
+    .form-group input[type="number"] {
       width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      background: #f8fafc;
-      color: var(--text-primary);
-      font-size: 15px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
-
-    input[type=number]:focus, input[type=text]:focus {
-      outline: none;
-      border-color: var(--accent-color);
-      box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+    .form-group input[type="checkbox"] {
+      margin-right: 8px;
     }
-
-    .controls {
+    .optional-section {
+      padding: 12px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+    .buttons {
       display: flex;
-      gap: 12px;
-      margin-top: 20px;
+      justify-content: space-between;
+      margin-top: 24px;
     }
-
     button {
-      padding: 12px 18px;
-      border-radius: 8px;
-      border: 0;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 15px;
-      transition: transform 0.1s, background-color 0.2s;
     }
-    button:hover {
-        transform: translateY(-1px);
-    }
-
-    .btn-primary {
-      background: var(--accent-color);
+    button#calculate {
+      background-color: #28a745;
       color: white;
     }
-    .btn-primary:hover {
-        background: var(--accent-color-dark);
+    button#reset {
+      background-color: #dc3545;
+      color: white;
     }
-
-    .btn-ghost {
-      background: #f1f5f9;
-      color: var(--text-secondary);
-      border: 1px solid var(--border-color);
-    }
-     .btn-ghost:hover {
-        background: #e2e8f0;
-    }
-
     .result {
-      background-color: #f8fafc;
+      margin-top: 24px;
       padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border-color);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f8f8f8;
     }
-
-    .muted {
-      color: var(--text-secondary);
-      font-size: 14px;
+    .result p {
+      margin-bottom: 8px;
     }
-
-    .big {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--accent-color);
-    }
-
-    .small {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-    
-    .table-wrapper {
-      overflow-x: auto;
-      width: 100%;
-      -webkit-overflow-scrolling: touch;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th {
-        font-weight: 600;
-    }
-    td, th {
-      padding: 12px;
-      text-align: left;
-      font-size: 14px;
-      border-bottom: 1px solid var(--border-color);
-      white-space: nowrap;
-    }
-    td:not(:first-child), th:not(:first-child){
-        text-align: right;
-    }
-
-    thead {
-        background-color: #f8fafc;
-    }
-    
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    tbody tr:nth-child(even){
-        background-color: #f8fafc;
-    }
-
-    th .hint {
-      display: block;
-      font-size: 11px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-      font-weight: 400;
-    }
-
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .details {
       margin-top: 16px;
+      display: none;
     }
-
-    .status-ok { color: #16a34a; }
-    .status-warn { color: #f97316; }
-    .status-danger { color: #dc2626; }
-    
-    hr.divider {
-        border: none;
-        margin: 20px 0;
-        height: 1px;
-        background: var(--border-color);
+    .details h3 {
+      margin-bottom: 12px;
     }
-
-    /* --- MOBILE RESPONSIVENESS --- */
-    @media (max-width: 980px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+    .info-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      font-size: 12px;
+      line-height: 16px;
+      cursor: pointer;
+      margin-left: 4px;
     }
-
-    @media (max-width: 768px) {
-      .container {
-        padding: 12px;
-        margin: 16px auto;
-      }
-      h1 {
-        font-size: 20px;
-      }
-      p.lead {
-          font-size: 14px;
-      }
-      .card {
-          padding: 16px;
-      }
-      .form-grid, .form-row {
-        grid-template-columns: 1fr;
-      }
-      .summary-grid {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-      }
-      .summary-grid > div {
-        width: 100% !important;
-      }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: #333;
+      color: #fff;
+      text-align: left;
+      border-radius: 4px;
+      padding: 8px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* show above */
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
     }
   </style>
 </head>
 <body>
+
+  <h1>Farm Ledger Settlement Calculator</h1>
+
   <div class="container">
-    <header>
-      <h1>Farm Ledger Settlement Calculator</h1>
-      <p class="lead">A tool for transparently calculating dues between a farm owner and a sharecropper based on customary rules.</p>
-    </header>
+    <div class="form-group">
+      <label for="totalRevenue">Total Revenue (Sale) <span class="tooltip">ℹ
+        <span class="tooltiptext">Gross sale value of crop(s)</span>
+      </span></label>
+      <input type="number" id="totalRevenue" placeholder="0.00" step="any" />
+    </div>
 
-    <div class="layout">
-      <!-- Left Column: Data Entry -->
-      <div>
-        <div class="card">
-          <div class="section-title">Summary</div>
-          <div class="summary-grid" style="display:flex; gap:16px; align-items:flex-end;">
-            <div style="flex:1;">
-              <label for="sales">Total sales revenue (currency)</label>
-              <input id="sales" type="number" step="0.01" value="0">
-            </div>
-            <div style="width:240px;">
-              <label for="note">Notes / Crop</label>
-              <input id="note" type="text" placeholder="e.g., Wheat 2025">
-            </div>
-          </div>
+    <div class="form-group">
+      <label for="ownerSharePct">Owner’s Share (%) <span class="tooltip">ℹ
+        <span class="tooltiptext">Fraction for owner, e.g. 50 for half</span>
+      </span></label>
+      <input type="number" id="ownerSharePct" placeholder="e.g. 50" step="any" />
+    </div>
 
-          <hr class="divider">
-
-          <div class="section-title">Seasonal Costs (Totals)</div>
-          <div class="form-grid">
-            <div>
-              <label for="fert_total">Fertilizer total</label>
-              <input id="fert_total" type="number" step="0.01" value="0">
-            </div>
-            <div>
-              <label for="seed_total">Seed total</label>
-              <input id="seed_total" type="number" step="0.01" value="0">
-            </div>
-            <div>
-              <label for="pest_total">Pesticide total</label>
-              <input id="pest_total" type="number" step="0.01" value="0">
-            </div>
-          </div>
-          <div class="form-row" style="margin-top:16px">
-            <div>
-              <label for="plough_total">Ploughing total</label>
-              <input id="plough_total" type="number" step="0.01" value="0">
-            </div>
-            <div>
-              <label for="labour_total">Labour total</label>
-              <input id="labour_total" type="number" step="0.01" value="0">
-            </div>
-          </div>
-          <div class="small" style="margin-top:12px; padding: 10px; background: #f8fafc; border-radius: 6px;">By default, the owner is assumed to have paid these totals. Use the option below only if the sharecropper paid some amounts.</div>
-          <div class="checkbox-row">
-            <input type="checkbox" id="sethChk" style="width: 16px; height: 16px;"><label for="sethChk" class="small" style="cursor:pointer;">Sharecropper paid some costs (show extra fields)</label>
-          </div>
-          <div id="sharePayments" style="display:none; margin-top:16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-            <p class="section-title">Costs Paid by Sharecropper</p>
-            <div class="form-grid">
-              <div>
-                <label for="share_fert">Fertilizer</label>
-                <input id="share_fert" type="number" step="0.01" value="0">
-              </div>
-              <div>
-                <label for="share_seed">Seed</label>
-                <input id="share_seed" type="number" step="0.01" value="0">
-              </div>
-              <div>
-                <label for="share_pest">Pesticide</label>
-                <input id="share_pest" type="number" step="0.01" value="0">
-              </div>
-            </div>
-            <div class="form-row" style="margin-top:16px">
-              <div>
-                <label for="share_plough">Ploughing</label>
-                <input id="share_plough" type="number" step="0.01" value="0">
-              </div>
-              <div>
-                <label for="share_labour">Labour</label>
-                <input id="share_labour" type="number" step="0.01" value="0">
-              </div>
-            </div>
-          </div>
-
-          <hr class="divider">
-
-          <div class="section-title">Cash Loans (Optional)</div>
-          <div class="form-row">
-            <div>
-              <label for="loan_owner_to_share">Loan from Owner → Sharecropper</label>
-              <input id="loan_owner_to_share" type="number" step="0.01" value="0">
-            </div>
-            <div>
-              <label for="loan_share_to_owner">Loan from Sharecropper → Owner</label>
-              <input id="loan_share_to_owner" type="number" step="0.01" value="0">
-            </div>
-          </div>
-          <div class="controls">
-            <button class="btn-primary" id="calcBtn">Calculate</button>
-            <button class="btn-ghost" id="resetBtn">Reset</button>
-          </div>
-        </div>
-        <div class="card" style="margin-top:24px">
-          <div class="section-title">Assumptions & Notes</div>
-          <ul class="small" style="padding-left: 20px; margin:0; display: flex; flex-direction: column; gap: 8px;">
-            <li><b>Shared Inputs:</b> Fertilizer, Seed, and Pesticide costs are split 50/50.</li>
-            <li><b>Sharecropper Costs:</b> Ploughing & Labour are 100% the sharecropper's responsibility, covered by their profit share.</li>
-            <li><b>Data Entry:</b> Enter total costs first. If the sharecropper paid anything, check the box and enter those specific amounts.</li>
-          </ul>
-        </div>
+    <fieldset>
+      <legend>Costs / Expenses</legend>
+      <div class="form-group">
+        <label for="costFertilizer">Fertilizer / Seed etc.</label>
+        <input type="number" id="costFertilizer" placeholder="0.00" step="any" />
       </div>
+      <div class="form-group">
+        <label for="costPlow">Ploughing / Cultivation</label>
+        <input type="number" id="costPlow" placeholder="0.00" step="any" />
+      </div>
+      <div class="form-group">
+        <label for="costOther">Other Costs</label>
+        <input type="number" id="costOther" placeholder="0.00" step="any" />
+      </div>
+    </fieldset>
 
-      <!-- Right Column: Results -->
-      <div>
-        <div class="card">
-          <div class="section-title">Results</div>
-          <div id="resultsArea">
-            <div class="result">
-              <div class="muted">Shared inputs total</div>
-              <div class="big" id="sharedInputs">0.00</div>
-            </div>
-            <div class="result">
-              <div class="muted">Profit pool (Sales − Shared inputs)</div>
-              <div class="big" id="profitPool">0.00</div>
-            </div>
-            <div class="result">
-              <div class="muted">Each party's share of profit</div>
-              <div class="big" id="eachShare">0.00</div>
-            </div>
-            <div class="result">
-              <div class="muted">Sharecropper's net profit</div>
-              <div class="small">(Profit share − Unpaid Ploughing & Labour)</div>
-              <div class="big" id="shareAfterPlough">0.00</div>
-            </div>
-            <div class="result" style="background-color: #e6f6e9;">
-              <div class="muted">Final Settlement</div>
-              <div class="small" id="settlementNote">Amount to be transferred.</div>
-              <div class="big" id="settlement">0.00</div>
-            </div>
-            
-            <div class="section-title" style="margin-top: 24px;">Detailed Breakdown</div>
-            <div class="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th style="width:110px">Owner Paid</th>
-                    <th style="width:110px">Sharecropper Paid</th>
-                    <th style="width:110px">Owner's Share</th>
-                    <th style="width:110px">Cropper's Share</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>Fertilizer</td><td id="t_owner_fert">0.00</td><td id="t_share_fert">0.00</td><td id="t_should_owner_fert">0.00</td><td id="t_should_share_fert">0.00</td></tr>
-                  <tr><td>Seed</td><td id="t_owner_seed">0.00</td><td id="t_share_seed">0.00</td><td id="t_should_owner_seed">0.00</td><td id="t_should_share_seed">0.00</td></tr>
-                  <tr><td>Pesticide</td><td id="t_owner_pest">0.00</td><td id="t_share_pest">0.00</td><td id="t_should_owner_pest">0.00</td><td id="t_should_share_pest">0.00</td></tr>
-                  <tr><td>Ploughing</td><td id="t_owner_plough">0.00</td><td id="t_share_plough">0.00</td><td id="t_should_owner_plough">0.00</td><td id="t_should_share_plough">0.00</td></tr>
-                  <tr><td>Labour</td><td id="t_owner_labour">0.00</td><td id="t_share_labour">0.00</td><td id="t_should_owner_labour">0.00</td><td id="t_should_share_labour">0.00</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+    <div class="form-group">
+      <input type="checkbox" id="hasSharecropperCosts" />
+      <label for="hasSharecropperCosts">Sharecropper paid some costs</label>
+    </div>
+
+    <div id="sharecropperCostSection" class="optional-section" style="display: none;">
+      <div class="form-group">
+        <label for="scCostFertilizer">SC’s Fertilizer / Seed share</label>
+        <input type="number" id="scCostFertilizer" placeholder="0.00" step="any" />
+      </div>
+      <div class="form-group">
+        <label for="scCostPlow">SC’s Ploughing / Cultivation</label>
+        <input type="number" id="scCostPlow" placeholder="0.00" step="any" />
+      </div>
+      <div class="form-group">
+        <label for="scCostOther">SC’s Other Costs</label>
+        <input type="number" id="scCostOther" placeholder="0.00" step="any" />
       </div>
     </div>
+
+    <div class="buttons">
+      <button id="calculate">Calculate</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <div class="result" id="resultSection" style="display: none;">
+      <h2>Result</h2>
+      <p id="summaryText"></p>
+      <button id="toggleDetails">Show detail breakdown</button>
+      <div class="details" id="detailSection">
+        <h3>Detailed Breakdown</h3>
+        <p id="detailText"></p>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    // JS logic remains unchanged.
-    function $(id){return document.getElementById(id)}
-    function num(id){return parseFloat($(id).value || 0) || 0}
-    function fmt(v){return (Math.round((v+Number.EPSILON)*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
-
-    function toggleSeth(){
-      const visible = $('sethChk').checked
-      $('sharePayments').style.display = visible ? 'block' : 'none'
-      if(!visible){
-        ['share_fert','share_seed','share_pest','share_plough','share_labour'].forEach(id=>{ if($(id)) $(id).value = 0 })
-      }
+    // Helper: format number
+    function fmt(x) {
+      return parseFloat(x).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    $('sethChk').addEventListener('change', toggleSeth)
+    document.getElementById('hasSharecropperCosts')
+      .addEventListener('change', function() {
+        const sec = document.getElementById('sharecropperCostSection');
+        sec.style.display = this.checked ? 'block' : 'none';
+      });
 
-    function setStatusClass(el, diff){
-      el.classList.remove('status-ok','status-warn','status-danger')
-      if (Math.abs(diff) < 0.01){ el.classList.add('status-ok') }
-      else if (diff > 0){ el.classList.add('status-warn') }
-      else { el.classList.add('status-danger') }
-    }
+    document.getElementById('calculate').addEventListener('click', function() {
+      const rev = parseFloat(document.getElementById('totalRevenue').value) || 0;
+      const ownerPct = parseFloat(document.getElementById('ownerSharePct').value) || 0;
 
-    function calculate(){
-      const sales = num('sales')
-      const fert_total = num('fert_total')
-      const seed_total = num('seed_total')
-      const pest_total = num('pest_total')
-      const plough_total = num('plough_total')
-      const labour_total = num('labour_total')
+      const cF = parseFloat(document.getElementById('costFertilizer').value) || 0;
+      const cP = parseFloat(document.getElementById('costPlow').value) || 0;
+      const cO = parseFloat(document.getElementById('costOther').value) || 0;
+      const totalCosts = cF + cP + cO;
 
-      const seth = $('sethChk').checked
-      let share_fert = 0, share_seed = 0, share_pest = 0, share_plough = 0, share_labour = 0
-      if(seth){
-        share_fert = Math.min(num('share_fert'), fert_total)
-        share_seed = Math.min(num('share_seed'), seed_total)
-        share_pest = Math.min(num('share_pest'), pest_total)
-        share_plough = Math.min(num('share_plough'), plough_total)
-        share_labour = Math.min(num('share_labour'), labour_total)
+      let scCosts = 0;
+      if (document.getElementById('hasSharecropperCosts').checked) {
+        const scF = parseFloat(document.getElementById('scCostFertilizer').value) || 0;
+        const scP = parseFloat(document.getElementById('scCostPlow').value) || 0;
+        const scO = parseFloat(document.getElementById('scCostOther').value) || 0;
+        scCosts = scF + scP + scO;
       }
 
-      const owner_fert = fert_total - share_fert
-      const owner_seed = seed_total - share_seed
-      const owner_pest = pest_total - share_pest
-      const owner_plough = plough_total - share_plough
-      const owner_labour = labour_total - share_labour
-
-      const loan_owner_to_share = num('loan_owner_to_share')
-      const loan_share_to_owner = num('loan_share_to_owner')
-
-      const sharedInputsTotal = fert_total + seed_total + pest_total
-      const eachInputObligation = sharedInputsTotal / 2
-
-      const should_owner_fert = fert_total / 2
-      const should_owner_seed = seed_total / 2
-      const should_owner_pest = pest_total / 2
-      const should_share_fert = fert_total / 2
-      const should_share_seed = seed_total / 2
-      const should_share_pest = pest_total / 2
-
-      const share_input_paid = share_fert + share_seed + share_pest
-      const profitPool = sales - sharedInputsTotal
-      const eachProfitShare = profitPool / 2
-      const share_paid_ploughlabour = share_plough + share_labour
-      const remainingPloughLabour = Math.max(0, (plough_total + labour_total) - share_paid_ploughlabour)
-      const shareAfterPlough = eachProfitShare - remainingPloughLabour
-      const share_input_overpayment = Math.max(0, share_input_paid - eachInputObligation)
-      const netLoans = loan_owner_to_share - loan_share_to_owner
-
-      let transfer = 0
-      if (shareAfterPlough < 0){
-        transfer += Math.abs(shareAfterPlough)
-      } else if (shareAfterPlough > 0){
-        transfer -= Math.abs(shareAfterPlough)
+      // Core logic: allocate revenue minus costs, then deduct SC costs if any
+      const net = rev - totalCosts;
+      const ownerShare = net * (ownerPct / 100);
+      const scShare = net - ownerShare;
+      // Settlement: owner gives to SC or SC gives to owner?
+      // Let “transfer” be amount owed by one party to the other:
+      let transfer = scShare - scCosts;
+      let transferText = '';
+      if (transfer > 0) {
+        transferText = `Owner pays sharecropper: ${fmt(transfer)}`;
+      } else if (transfer < 0) {
+        transferText = `Sharecropper returns to owner: ${fmt(-transfer)}`;
+      } else {
+        transferText = `No transfer needed`;
       }
-      transfer -= share_input_overpayment
-      transfer += netLoans
 
-      if (Math.abs(transfer) < 0.005) transfer = 0
+      // Show results
+      document.getElementById('summaryText').textContent =
+        `Net revenue after costs: ${fmt(net)}\n` +
+        `Owner’s share: ${fmt(ownerShare)}\n` +
+        `Sharecropper’s share (before costs): ${fmt(scShare)}\n` +
+        transferText;
 
-      $('sharedInputs').innerText = fmt(sharedInputsTotal)
-      $('profitPool').innerText = fmt(profitPool)
-      $('eachShare').innerText = fmt(eachProfitShare)
-      $('shareAfterPlough').innerText = fmt(shareAfterPlough)
-      $('settlement').innerText = fmt(Math.abs(transfer))
+      // Detail text
+      const det = `
+Total revenue: ${fmt(rev)}  
+Total costs (owner + general): ${fmt(totalCosts)}  
+Sharecropper’s cost contributions: ${fmt(scCosts)}  
 
-      let whoOwesText = 'No transfer needed.'
-      if (transfer > 0.01){
-        whoOwesText = `Sharecropper pays Owner`
-      } else if (transfer < -0.01){
-        whoOwesText = `Owner pays Sharecropper`
+Net = revenue − costs = ${fmt(net)}  
+Owner portion = net × (${ownerPct}% ) = ${fmt(ownerShare)}  
+Sharecropper portion = net − owner = ${fmt(scShare)}  
+
+Transfer = sharecropper’s portion − sharecropper’s cost contributions = ${fmt(transfer)}  
+${transfer > 0 ? 'Owner pays that to sharecropper.' : transfer < 0 ? 'Sharecropper returns that to owner.' : 'Balances exactly.'}
+      `;
+      document.getElementById('detailText').textContent = det;
+
+      document.getElementById('resultSection').style.display = 'block';
+    });
+
+    document.getElementById('reset').addEventListener('click', function() {
+      document.querySelectorAll('input').forEach(inp => {
+        if (inp.type === 'number') inp.value = '';
+        if (inp.type === 'checkbox') inp.checked = false;
+      });
+      document.getElementById('sharecropperCostSection').style.display = 'none';
+      document.getElementById('resultSection').style.display = 'none';
+    });
+
+    document.getElementById('toggleDetails').addEventListener('click', function() {
+      const det = document.getElementById('detailSection');
+      if (det.style.display === 'block') {
+        det.style.display = 'none';
+        this.textContent = 'Show detail breakdown';
+      } else {
+        det.style.display = 'block';
+        this.textContent = 'Hide detail breakdown';
       }
-      $('settlementNote').innerText = whoOwesText
-      
-      const ownerFertEl = $('t_owner_fert'); ownerFertEl.innerText = fmt(owner_fert)
-      const shareFertEl = $('t_share_fert'); shareFertEl.innerText = fmt(share_fert)
-      const shouldOwnerFertEl = $('t_should_owner_fert'); shouldOwnerFertEl.innerText = fmt(should_owner_fert)
-      const shouldShareFertEl = $('t_should_share_fert'); shouldShareFertEl.innerText = fmt(should_share_fert)
-
-      const ownerSeedEl = $('t_owner_seed'); ownerSeedEl.innerText = fmt(owner_seed)
-      const shareSeedEl = $('t_share_seed'); shareSeedEl.innerText = fmt(share_seed)
-      const shouldOwnerSeedEl = $('t_should_owner_seed'); shouldOwnerSeedEl.innerText = fmt(should_owner_seed)
-      const shouldShareSeedEl = $('t_should_share_seed'); shouldShareSeedEl.innerText = fmt(should_share_seed)
-
-      const ownerPestEl = $('t_owner_pest'); ownerPestEl.innerText = fmt(owner_pest)
-      const sharePestEl = $('t_share_pest'); sharePestEl.innerText = fmt(share_pest)
-      const shouldOwnerPestEl = $('t_should_owner_pest'); shouldOwnerPestEl.innerText = fmt(should_owner_pest)
-      const shouldSharePestEl = $('t_should_share_pest'); shouldSharePestEl.innerText = fmt(should_share_pest)
-
-      const ownerPloughEl = $('t_owner_plough'); ownerPloughEl.innerText = fmt(owner_plough)
-      const sharePloughEl = $('t_share_plough'); sharePloughEl.innerText = fmt(share_plough)
-      const shouldOwnerPloughEl = $('t_should_owner_plough'); shouldOwnerPloughEl.innerText = fmt(0)
-      const shouldSharePloughEl = $('t_should_share_plough'); shouldSharePloughEl.innerText = fmt(plough_total)
-
-      const ownerLabourEl = $('t_owner_labour'); ownerLabourEl.innerText = fmt(owner_labour)
-      const shareLabourEl = $('t_share_labour'); shareLabourEl.innerText = fmt(share_labour)
-      const shouldOwnerLabourEl = $('t_should_owner_labour'); shouldOwnerLabourEl.innerText = fmt(0)
-      const shouldShareLabourEl = $('t_should_share_labour'); shouldShareLabourEl.innerText = fmt(labour_total)
-
-      setStatusClass(ownerFertEl, owner_fert - should_owner_fert)
-      setStatusClass(shareFertEl, share_fert - should_share_fert)
-      setStatusClass(ownerSeedEl, owner_seed - should_owner_seed)
-      setStatusClass(shareSeedEl, share_seed - should_share_seed)
-      setStatusClass(ownerPestEl, owner_pest - should_owner_pest)
-      setStatusClass(sharePestEl, share_pest - should_share_pest)
-      setStatusClass(ownerPloughEl, owner_plough - 0)
-      setStatusClass(sharePloughEl, share_plough - plough_total)
-      setStatusClass(ownerLabourEl, owner_labour - 0)
-      setStatusClass(shareLabourEl, share_labour - labour_total)
-    }
-
-    $('calcBtn').addEventListener('click', calculate)
-    $('resetBtn').addEventListener('click', ()=>{
-      document.querySelectorAll('input').forEach(i=>{ if(i.type==='number') i.value='0' ; if(i.type==='text') i.value=''});
-      document.getElementById('sethChk').checked = false
-      toggleSeth()
-      calculate()
-    })
-
-    toggleSeth()
-    calculate()
+    });
   </script>
 </body>
 </html>
-
-
