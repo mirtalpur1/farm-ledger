@@ -277,7 +277,6 @@
     </header>
 
     <div class="layout">
-      <!-- Left Column: Data Entry -->
       <div>
         <div class="card">
           <div class="section-title">Summary</div>
@@ -379,7 +378,6 @@
         </div>
       </div>
 
-      <!-- Right Column: Results -->
       <div>
         <div class="card">
           <div class="section-title">Results</div>
@@ -435,7 +433,7 @@
   </div>
 
   <script>
-    // JS logic remains unchanged.
+    // Helper functions (unchanged)
     function $(id){return document.getElementById(id)}
     function num(id){return parseFloat($(id).value || 0) || 0}
     function fmt(v){return (Math.round((v+Number.EPSILON)*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -448,15 +446,32 @@
       }
     }
 
-    $('sethChk').addEventListener('change', toggleSeth)
-
     function setStatusClass(el, diff){
       el.classList.remove('status-ok','status-warn','status-danger')
       if (Math.abs(diff) < 0.01){ el.classList.add('status-ok') }
       else if (diff > 0){ el.classList.add('status-warn') }
       else { el.classList.add('status-danger') }
     }
+    
+    // --- ADDED RESET FUNCTION ---
+    function resetApp() {
+      // Reset all number inputs
+      const inputs = document.querySelectorAll('input[type=number]');
+      inputs.forEach(input => input.value = '0');
+      
+      // Reset text inputs
+      const textInputs = document.querySelectorAll('input[type=text]');
+      textInputs.forEach(input => input.value = '');
 
+      // Uncheck and hide sharecropper payments
+      $('sethChk').checked = false;
+      toggleSeth();
+      
+      // Recalculate to clear results panel to 0.00
+      calculate();
+    }
+
+    // Main calculation function (unchanged)
     function calculate(){
       const sales = num('sales')
       const fert_total = num('fert_total')
@@ -560,4 +575,21 @@
       setStatusClass(ownerPestEl, owner_pest - should_owner_pest)
       setStatusClass(sharePestEl, share_pest - should_share_pest)
       setStatusClass(ownerPloughEl, owner_plough - 0)
-   
+      setStatusClass(sharePloughEl, share_plough - plough_total)
+      setStatusClass(ownerLabourEl, owner_labour - 0)
+      setStatusClass(shareLabourEl, share_labour - labour_total)
+    }
+
+    // --- ATTACH EVENT LISTENERS ---
+    // This listener for the checkbox was already here and correct
+    $('sethChk').addEventListener('change', toggleSeth);
+    
+    // --- FIX: These listeners were missing ---
+    $('calcBtn').addEventListener('click', calculate);
+    $('resetBtn').addEventListener('click', resetApp);
+    
+    // Run once on load to populate 0.00
+    calculate();
+  </script>
+</body>
+</html>
