@@ -12,15 +12,13 @@
       --text-primary: #334155;
       --text-secondary: #64748b;
       --border-color: #e2e8f0;
-      --accent-color: #28a745; /* Earthy Green */
+      --accent-color: #28a745;
       --accent-color-dark: #218838;
       --max-width: 1160px;
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
     }
     
-    * { 
-      box-sizing: border-box; 
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       height: 100%;
@@ -145,6 +143,14 @@
         background: #e2e8f0;
     }
 
+    .btn-print {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-print:hover {
+      background: #2563eb;
+    }
+
     .result {
       background-color: #f8fafc;
       padding: 16px;
@@ -234,6 +240,147 @@
         background: var(--border-color);
     }
 
+    /* --- MISC EXPENSE ROWS --- */
+    .misc-row {
+      display: grid;
+      grid-template-columns: 1fr 140px 36px;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .misc-row:last-child {
+      border-bottom: none;
+    }
+
+    .misc-row input[type=text], .misc-row input[type=number] {
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    .misc-remove-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      background: #fee2e2;
+      color: #dc2626;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: background 0.2s, transform 0.1s;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .misc-remove-btn:hover {
+      background: #fecaca;
+      transform: translateY(-1px);
+    }
+
+    .misc-share-row {
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 10px;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .misc-share-row:last-child {
+      border-bottom: none;
+    }
+    .misc-share-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .misc-share-row input[type=number] {
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    .add-misc-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px dashed var(--border-color);
+      background: #f8fafc;
+      color: var(--accent-color);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+    }
+    .add-misc-btn:hover {
+      background: #e6f6e9;
+      border-color: var(--accent-color);
+      transform: translateY(-1px);
+    }
+
+    .cost-badge {
+      display: inline-block;
+      background: #e6f6e9;
+      color: var(--accent-color-dark);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+
+    .misc-empty {
+      color: var(--text-secondary);
+      font-size: 13px;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- FOOTER --- */
+    .footer {
+      text-align: center;
+      padding: 24px 0;
+      margin-top: 32px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      border-top: 1px solid var(--border-color);
+    }
+    .footer a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* --- PRINT STYLES --- */
+    @media print {
+      body { background: white; }
+      .container { margin: 0; padding: 12px; max-width: 100%; }
+      .layout { grid-template-columns: 1fr; gap: 16px; }
+      .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+      .controls, .no-print { display: none !important; }
+      .checkbox-row { display: none; }
+      #sharePayments { display: none !important; }
+      .add-misc-btn { display: none !important; }
+      .misc-remove-btn { display: none !important; }
+      .footer { display: none; }
+      h1 { font-size: 20px; }
+      .result { break-inside: avoid; }
+    }
+
     /* --- MOBILE RESPONSIVENESS --- */
     @media (max-width: 980px) {
       .layout {
@@ -266,6 +413,9 @@
       .summary-grid > div {
         width: 100% !important;
       }
+      .misc-row {
+        grid-template-columns: 1fr 100px 36px;
+      }
     }
   </style>
 </head>
@@ -293,7 +443,7 @@
 
           <hr class="divider">
 
-          <div class="section-title">Seasonal Costs (Totals)</div>
+          <div class="section-title">Seasonal Costs (Totals) <span class="cost-badge" id="seasonalTotalBadge">0.00</span></div>
           <div class="form-grid">
             <div>
               <label for="fert_total">Fertilizer total</label>
@@ -348,7 +498,28 @@
                 <input id="share_labour" type="number" step="0.01" value="0">
               </div>
             </div>
+
+            <!-- Sharecropper-paid misc expenses -->
+            <div id="shareMiscSection" style="margin-top:16px; display:none;">
+              <p style="font-weight:600; font-size:15px; margin-bottom:10px;">Misc Expenses (Sharecropper Paid)</p>
+              <div id="shareMiscContainer"></div>
+            </div>
           </div>
+
+          <hr class="divider">
+
+          <!-- === COMBINED MISC EXPENSES === -->
+          <div class="section-title">Combined Misc Expenses <span class="cost-badge" id="miscTotalBadge">0.00</span></div>
+          <div class="small" style="padding: 10px; background: #fffbeb; border-radius: 6px; margin-bottom: 12px; border: 1px solid #fde68a;">
+            💡 <strong>50/50 split</strong> — These expenses are shared equally between the owner and the sharecropper, just like Fertilizer, Seed & Pesticide.
+          </div>
+          <div id="miscContainer">
+            <div class="misc-empty" id="miscEmptyMsg">No misc expenses added yet. Click below to add one.</div>
+          </div>
+          <button type="button" class="add-misc-btn" onclick="addMiscRow()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Misc Expense
+          </button>
 
           <hr class="divider">
 
@@ -366,12 +537,14 @@
           <div class="controls">
             <button class="btn-primary" id="calcBtn">Calculate</button>
             <button class="btn-ghost" id="resetBtn">Reset</button>
+            <button class="btn-print no-print" id="printBtn">🖨️ Print</button>
           </div>
         </div>
         <div class="card" style="margin-top:24px">
           <div class="section-title">Assumptions & Notes</div>
           <ul class="small" style="padding-left: 20px; margin:0; display: flex; flex-direction: column; gap: 8px;">
             <li><b>Shared Inputs:</b> Fertilizer, Seed, and Pesticide costs are split 50/50.</li>
+            <li><b>Combined Misc Expenses:</b> Any additional miscellaneous costs (canal cleaning, guard salary, etc.) are also split 50/50 — half by the owner, half by the sharecropper.</li>
             <li><b>Sharecropper Costs:</b> Ploughing & Labour are 100% the sharecropper's responsibility, covered by their profit share.</li>
             <li><b>Data Entry:</b> Enter total costs first. If the sharecropper paid anything, check the box and enter those specific amounts.</li>
           </ul>
@@ -383,7 +556,7 @@
           <div class="section-title">Results</div>
           <div id="resultsArea">
             <div class="result">
-              <div class="muted">Shared inputs total</div>
+              <div class="muted">Shared inputs total (incl. misc)</div>
               <div class="big" id="sharedInputs">0.00</div>
             </div>
             <div class="result">
@@ -417,7 +590,7 @@
                     <th style="width:110px">Cropper's Share</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="breakdownBody">
                   <tr><td>Fertilizer</td><td id="t_owner_fert">0.00</td><td id="t_share_fert">0.00</td><td id="t_should_owner_fert">0.00</td><td id="t_should_share_fert">0.00</td></tr>
                   <tr><td>Seed</td><td id="t_owner_seed">0.00</td><td id="t_share_seed">0.00</td><td id="t_should_owner_seed">0.00</td><td id="t_should_share_seed">0.00</td></tr>
                   <tr><td>Pesticide</td><td id="t_owner_pest">0.00</td><td id="t_share_pest">0.00</td><td id="t_should_owner_pest">0.00</td><td id="t_should_share_pest">0.00</td></tr>
@@ -430,20 +603,29 @@
         </div>
       </div>
     </div>
+
+    <div class="footer">
+      Farm Ledger &copy; 2025 &mdash; Settlement Calculator for Customary Sharecropping
+    </div>
   </div>
 
   <script>
-    // Helper functions (unchanged)
+    // === HELPER FUNCTIONS (UNCHANGED FROM ORIGINAL) ===
     function $(id){return document.getElementById(id)}
     function num(id){return parseFloat($(id).value || 0) || 0}
     function fmt(v){return (Math.round((v+Number.EPSILON)*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 
+    // === SHARECROPPER CHECKBOX TOGGLE (UNCHANGED LOGIC) ===
     function toggleSeth(){
       const visible = $('sethChk').checked
       $('sharePayments').style.display = visible ? 'block' : 'none'
       if(!visible){
         ['share_fert','share_seed','share_pest','share_plough','share_labour'].forEach(id=>{ if($(id)) $(id).value = 0 })
+        // Also reset sharecropper misc values
+        document.querySelectorAll('.share-misc-input').forEach(inp => inp.value = 0)
       }
+      // Show/hide sharecropper misc section
+      updateShareMiscSection()
     }
 
     function setStatusClass(el, diff){
@@ -452,26 +634,142 @@
       else if (diff > 0){ el.classList.add('status-warn') }
       else { el.classList.add('status-danger') }
     }
-    
-    // --- ADDED RESET FUNCTION ---
+
+    // === MISC EXPENSES SYSTEM (NEW) ===
+    let miscCounter = 0;
+
+    function addMiscRow(descVal, amountVal) {
+      const container = $('miscContainer');
+      const emptyMsg = $('miscEmptyMsg');
+      if (emptyMsg) emptyMsg.style.display = 'none';
+
+      miscCounter++;
+      const id = miscCounter;
+      const row = document.createElement('div');
+      row.className = 'misc-row';
+      row.id = `misc_row_${id}`;
+      row.setAttribute('data-misc-id', id);
+      row.innerHTML = `
+        <input type="text" placeholder="e.g., Canal cleaning" class="misc-desc" value="${descVal || ''}">
+        <input type="number" step="0.01" min="0" placeholder="Amount" class="misc-amount" value="${amountVal || 0}">
+        <button type="button" class="misc-remove-btn" onclick="removeMiscRow(${id})" title="Remove">×</button>
+      `;
+      container.appendChild(row);
+
+      // Update the sharecropper misc section if it's visible
+      updateShareMiscSection();
+      updateMiscBadge();
+
+      // Add listener on amount change to update badge
+      row.querySelector('.misc-amount').addEventListener('input', updateMiscBadge);
+      row.querySelector('.misc-desc').addEventListener('input', () => updateShareMiscSection());
+    }
+
+    function removeMiscRow(id) {
+      const row = $(`misc_row_${id}`);
+      if (row) row.remove();
+      
+      const container = $('miscContainer');
+      const remaining = container.querySelectorAll('.misc-row');
+      if (remaining.length === 0) {
+        const emptyMsg = $('miscEmptyMsg');
+        if (emptyMsg) emptyMsg.style.display = 'block';
+      }
+      updateShareMiscSection();
+      updateMiscBadge();
+    }
+
+    function getMiscExpenses() {
+      const rows = document.querySelectorAll('.misc-row');
+      const items = [];
+      rows.forEach(row => {
+        const desc = row.querySelector('.misc-desc')?.value?.trim() || 'Misc';
+        const amount = parseFloat(row.querySelector('.misc-amount')?.value) || 0;
+        const id = row.getAttribute('data-misc-id');
+        if (amount > 0) {
+          items.push({ id, desc, amount });
+        }
+      });
+      return items;
+    }
+
+    function updateMiscBadge() {
+      const items = getMiscExpenses();
+      const total = items.reduce((sum, i) => sum + i.amount, 0);
+      $('miscTotalBadge').innerText = fmt(total);
+    }
+
+    function updateSeasonalBadge() {
+      const total = num('fert_total') + num('seed_total') + num('pest_total') + num('plough_total') + num('labour_total');
+      $('seasonalTotalBadge').innerText = fmt(total);
+    }
+
+    function updateShareMiscSection() {
+      const section = $('shareMiscSection');
+      const container = $('shareMiscContainer');
+      const miscItems = getMiscExpenses();
+      const isChecked = $('sethChk').checked;
+
+      if (!isChecked || miscItems.length === 0) {
+        section.style.display = 'none';
+        container.innerHTML = '';
+        return;
+      }
+
+      section.style.display = 'block';
+
+      // Rebuild the sharecropper misc fields from current misc rows
+      // Preserve existing values where IDs match
+      const existingValues = {};
+      container.querySelectorAll('.misc-share-row').forEach(row => {
+        const mid = row.getAttribute('data-misc-id');
+        const val = row.querySelector('.share-misc-input')?.value || '0';
+        existingValues[mid] = val;
+      });
+
+      container.innerHTML = '';
+      // Also add any misc rows with 0 amount but description for completeness
+      const allRows = document.querySelectorAll('.misc-row');
+      allRows.forEach(row => {
+        const desc = row.querySelector('.misc-desc')?.value?.trim() || 'Misc';
+        const totalAmt = parseFloat(row.querySelector('.misc-amount')?.value) || 0;
+        const id = row.getAttribute('data-misc-id');
+        if (totalAmt > 0) {
+          const shareRow = document.createElement('div');
+          shareRow.className = 'misc-share-row';
+          shareRow.setAttribute('data-misc-id', id);
+          const prevVal = existingValues[id] || '0';
+          shareRow.innerHTML = `
+            <div class="misc-share-label" title="${desc}">${desc}</div>
+            <input type="number" step="0.01" min="0" class="share-misc-input" data-misc-id="${id}" data-max="${totalAmt}" value="${prevVal}">
+          `;
+          container.appendChild(shareRow);
+        }
+      });
+    }
+
+    // === RESET (ENHANCED) ===
     function resetApp() {
-      // Reset all number inputs
       const inputs = document.querySelectorAll('input[type=number]');
       inputs.forEach(input => input.value = '0');
-      
-      // Reset text inputs
       const textInputs = document.querySelectorAll('input[type=text]');
       textInputs.forEach(input => input.value = '');
 
-      // Uncheck and hide sharecropper payments
       $('sethChk').checked = false;
       toggleSeth();
-      
-      // Recalculate to clear results panel to 0.00
+
+      // Clear all misc rows
+      $('miscContainer').innerHTML = '<div class="misc-empty" id="miscEmptyMsg">No misc expenses added yet. Click below to add one.</div>';
+      $('shareMiscContainer').innerHTML = '';
+      $('shareMiscSection').style.display = 'none';
+      miscCounter = 0;
+
+      updateMiscBadge();
+      updateSeasonalBadge();
       calculate();
     }
 
-    // Main calculation function (unchanged)
+    // === MAIN CALCULATION (CORE LOGIC PRESERVED — misc expenses added to shared inputs) ===
     function calculate(){
       const sales = num('sales')
       const fert_total = num('fert_total')
@@ -499,7 +797,27 @@
       const loan_owner_to_share = num('loan_owner_to_share')
       const loan_share_to_owner = num('loan_share_to_owner')
 
-      const sharedInputsTotal = fert_total + seed_total + pest_total
+      // --- MISC EXPENSES (NEW — treated same as shared inputs: 50/50) ---
+      const miscItems = getMiscExpenses();
+      const miscTotal = miscItems.reduce((sum, i) => sum + i.amount, 0);
+
+      // Get sharecropper-paid misc amounts
+      const miscSharePaid = {};
+      document.querySelectorAll('.share-misc-input').forEach(inp => {
+        const mid = inp.getAttribute('data-misc-id');
+        const maxVal = parseFloat(inp.getAttribute('data-max')) || 0;
+        miscSharePaid[mid] = Math.min(parseFloat(inp.value) || 0, maxVal);
+      });
+
+      let miscSharePaidTotal = 0;
+      miscItems.forEach(item => {
+        miscSharePaid[item.id] = miscSharePaid[item.id] || 0;
+        miscSharePaidTotal += miscSharePaid[item.id];
+      });
+      const miscOwnerPaidTotal = miscTotal - miscSharePaidTotal;
+
+      // --- CORE CALCULATION (UNCHANGED FORMULA — misc added to shared inputs) ---
+      const sharedInputsTotal = fert_total + seed_total + pest_total + miscTotal
       const eachInputObligation = sharedInputsTotal / 2
 
       const should_owner_fert = fert_total / 2
@@ -509,7 +827,7 @@
       const should_share_seed = seed_total / 2
       const should_share_pest = pest_total / 2
 
-      const share_input_paid = share_fert + share_seed + share_pest
+      const share_input_paid = share_fert + share_seed + share_pest + miscSharePaidTotal
       const profitPool = sales - sharedInputsTotal
       const eachProfitShare = profitPool / 2
       const share_paid_ploughlabour = share_plough + share_labour
@@ -529,6 +847,7 @@
 
       if (Math.abs(transfer) < 0.005) transfer = 0
 
+      // --- RENDER RESULTS ---
       $('sharedInputs').innerText = fmt(sharedInputsTotal)
       $('profitPool').innerText = fmt(profitPool)
       $('eachShare').innerText = fmt(eachProfitShare)
@@ -543,6 +862,7 @@
       }
       $('settlementNote').innerText = whoOwesText
       
+      // --- ORIGINAL TABLE UPDATES (UNCHANGED) ---
       const ownerFertEl = $('t_owner_fert'); ownerFertEl.innerText = fmt(owner_fert)
       const shareFertEl = $('t_share_fert'); shareFertEl.innerText = fmt(share_fert)
       const shouldOwnerFertEl = $('t_should_owner_fert'); shouldOwnerFertEl.innerText = fmt(should_owner_fert)
@@ -568,6 +888,7 @@
       const shouldOwnerLabourEl = $('t_should_owner_labour'); shouldOwnerLabourEl.innerText = fmt(0)
       const shouldShareLabourEl = $('t_should_share_labour'); shouldShareLabourEl.innerText = fmt(labour_total)
 
+      // --- STATUS COLORS (UNCHANGED) ---
       setStatusClass(ownerFertEl, owner_fert - should_owner_fert)
       setStatusClass(shareFertEl, share_fert - should_share_fert)
       setStatusClass(ownerSeedEl, owner_seed - should_owner_seed)
@@ -578,17 +899,75 @@
       setStatusClass(sharePloughEl, share_plough - plough_total)
       setStatusClass(ownerLabourEl, owner_labour - 0)
       setStatusClass(shareLabourEl, share_labour - labour_total)
+
+      // --- MISC ROWS IN TABLE (NEW) ---
+      // Remove old misc table rows
+      document.querySelectorAll('.misc-table-row').forEach(r => r.remove());
+      
+      // Insert misc rows after Pesticide row (before Ploughing)
+      const tbody = $('breakdownBody');
+      const ploughRow = $('t_owner_plough')?.closest('tr');
+      
+      miscItems.forEach(item => {
+        const sharePaid = miscSharePaid[item.id] || 0;
+        const ownerPaid = item.amount - sharePaid;
+        const shouldOwner = item.amount / 2;
+        const shouldShare = item.amount / 2;
+
+        const tr = document.createElement('tr');
+        tr.className = 'misc-table-row';
+        
+        const tdName = document.createElement('td');
+        tdName.innerText = item.desc;
+        tdName.style.fontStyle = 'italic';
+        
+        const tdOwnerPaid = document.createElement('td');
+        tdOwnerPaid.innerText = fmt(ownerPaid);
+        setStatusClass(tdOwnerPaid, ownerPaid - shouldOwner);
+        
+        const tdSharePaid = document.createElement('td');
+        tdSharePaid.innerText = fmt(sharePaid);
+        setStatusClass(tdSharePaid, sharePaid - shouldShare);
+        
+        const tdShouldOwner = document.createElement('td');
+        tdShouldOwner.innerText = fmt(shouldOwner);
+        
+        const tdShouldShare = document.createElement('td');
+        tdShouldShare.innerText = fmt(shouldShare);
+
+        tr.appendChild(tdName);
+        tr.appendChild(tdOwnerPaid);
+        tr.appendChild(tdSharePaid);
+        tr.appendChild(tdShouldOwner);
+        tr.appendChild(tdShouldShare);
+
+        if (ploughRow) {
+          tbody.insertBefore(tr, ploughRow);
+        } else {
+          tbody.appendChild(tr);
+        }
+      });
+
+      // Update badges
+      updateSeasonalBadge();
+      updateMiscBadge();
     }
 
-    // --- ATTACH EVENT LISTENERS ---
-    // This listener for the checkbox was already here and correct
+    // === EVENT LISTENERS ===
     $('sethChk').addEventListener('change', toggleSeth);
-    
-    // --- FIX: These listeners were missing ---
     $('calcBtn').addEventListener('click', calculate);
     $('resetBtn').addEventListener('click', resetApp);
-    
-    // Run once on load to populate 0.00
+    $('printBtn').addEventListener('click', () => {
+      calculate(); // Ensure latest values
+      window.print();
+    });
+
+    // Auto-update seasonal badge on input change
+    ['fert_total','seed_total','pest_total','plough_total','labour_total'].forEach(id => {
+      $(id).addEventListener('input', updateSeasonalBadge);
+    });
+
+    // Run once on load
     calculate();
   </script>
 </body>
